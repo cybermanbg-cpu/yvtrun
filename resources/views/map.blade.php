@@ -82,6 +82,22 @@
             </div>
         </div>
 
+         <!-- Action Buttons -->
+        <div class="my-8 flex flex-wrap gap-4 justify-center">
+            <a href="{{ route('volunteers.index') }}"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
+                🤝 Стани доброволец
+            </a>
+            <a href="{{ route('donations.index') }}"
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
+                ❤️ Дари сега
+            </a>
+            <a href="/runner-panel"
+                class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
+                🏃‍♂️ Панел на бегача
+            </a>
+        </div>
+
         <!-- Бутони за управление на картата -->
         <div class="flex gap-2 mb-4">
             <button onclick="centerOnRunner()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
@@ -187,22 +203,6 @@
                     </div>
                 @endif
             </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="mt-8 flex flex-wrap gap-4 justify-center">
-            <a href="{{ route('volunteers.index') }}"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
-                🤝 Стани доброволец
-            </a>
-            <a href="{{ route('donations.index') }}"
-                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
-                ❤️ Дари сега
-            </a>
-            <a href="/runner-panel"
-                class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
-                🏃‍♂️ Панел на бегача
-            </a>
         </div>
 
         <!-- 🤝 Секция за доброволци -->
