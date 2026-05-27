@@ -6,6 +6,7 @@ use App\Models\Run;
 use App\Models\Checkpoint;
 use App\Models\Donation;
 use App\Models\Volunteer;
+use App\Models\YouTubeVideo; // ДОБАВИ ТОВА
 
 class RunController extends Controller
 {
@@ -27,10 +28,15 @@ class RunController extends Controller
         $currentLng = $run->current_lng ?? 26.5000;
         $currentDistance = $run->distance_covered_km ?? 0;
         
+        // Вземи видеата
+        $liveVideo = YouTubeVideo::where('is_live', true)->where('is_active', true)->first();
+        $pastVideos = YouTubeVideo::where('is_live', false)->where('is_active', true)->orderBy('created_at', 'desc')->get();
+        
         return view('map', compact(
             'checkpoints', 'totalRaised', 'donorsCount', 'goalAmount', 'percentage',
             'volunteersCount', 'volunteersByRole', 'recentVolunteers',
-            'currentLat', 'currentLng', 'currentDistance'
+            'currentLat', 'currentLng', 'currentDistance',
+            'liveVideo', 'pastVideos'  // ДОБАВИ ТОВА
         ));
     }
 }

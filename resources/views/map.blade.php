@@ -84,6 +84,70 @@
             </div>
         </div>
 
+        <!-- 🎥 YouTube Видеа секция -->
+        <div class="mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-red-600">🎥</span>
+                    Видео от бягането
+                </h2>
+
+                <!-- ЛАЙФ ВИДЕО -->
+                @if ($liveVideo)
+                    <div class="mb-8">
+                        <div class="relative">
+                            <div
+                                class="absolute top-2 left-2 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                                🔴 НА ЖИВО
+                            </div>
+                            <div class="aspect-video w-full rounded-lg overflow-hidden shadow-lg">
+                                <iframe class="w-full h-full" src="{{ $liveVideo->embed_url }}"
+                                    title="{{ $liveVideo->title }}" frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            <p class="text-center mt-2 font-bold text-gray-700">{{ $liveVideo->title }}</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="mb-8 bg-gray-100 rounded-lg p-6 text-center">
+                        <div class="text-4xl mb-2">📺</div>
+                        <p class="text-gray-500">Все още няма активен лайфстрийм</p>
+                        <p class="text-sm text-gray-400">Очаквайте скоро!</p>
+                    </div>
+                @endif
+
+                <!-- МИНАЛИ ВИДЕА -->
+                @if ($pastVideos->count() > 0)
+                    <div>
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+                            <span class="text-gray-600">📼</span>
+                            Предишни видеа
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach ($pastVideos as $video)
+                                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
+                                    <div class="aspect-video w-full bg-gray-200">
+                                        <iframe class="w-full h-full" src="{{ $video->embed_url }}"
+                                            title="{{ $video->title }}" frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                    <div class="p-3">
+                                        <p class="font-medium text-gray-800 text-sm">{{ $video->title }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            {{ $video->created_at->format('d.m.Y H:i') }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="mt-8 flex flex-wrap gap-4 justify-center">
             <a href="{{ route('volunteers.index') }}"
@@ -122,118 +186,134 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    let map = null;
-    let runnerMarker = null;
-    let runnerCircle = null;
-    
-    function initMap() {
-        map = L.map('map').setView([42.4833, 26.5000], 8);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-        
-        // Контролни точки
-        const checkpoints = @json($checkpoints);
-        checkpoints.forEach(cp => {
-            const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
-            L.marker([parseFloat(cp.lat), parseFloat(cp.lng)], {
-                icon: L.divIcon({ html: emoji, iconSize: [28, 28] })
-            }).bindPopup(`${cp.name}<br>${cp.distance_km} км`).addTo(map);
-        });
-        
-        startTracking();
-    }
-    
-    function updateRunnerPosition(lat, lng, distance) {
-        if (!map) return;
-        
-        console.log('📍 Преместване на:', lat, lng);
-        
-        // Премахване на старите елементи
-        if (runnerMarker) {
-            map.removeLayer(runnerMarker);
+    <script>
+        let map = null;
+        let runnerMarker = null;
+        let runnerCircle = null;
+
+        function initMap() {
+            map = L.map('map').setView([42.4833, 26.5000], 8);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Контролни точки
+            const checkpoints = @json($checkpoints);
+            checkpoints.forEach(cp => {
+                const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
+                L.marker([parseFloat(cp.lat), parseFloat(cp.lng)], {
+                    icon: L.divIcon({
+                        html: emoji,
+                        iconSize: [28, 28]
+                    })
+                }).bindPopup(`${cp.name}<br>${cp.distance_km} км`).addTo(map);
+            });
+
+            startTracking();
         }
-        if (runnerCircle) {
-            map.removeLayer(runnerCircle);
-        }
-        
-        // Хубав червен пип (pin marker)
-        const redPinIcon = L.divIcon({
-            className: 'custom-pin',
-            html: '<div style="background-color: #e74c3c; width: 20px; height: 20px; border-radius: 50% 50% 50% 0; border: 3px solid white; transform: rotate(-45deg); box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div><div style="position: absolute; top: 5px; left: 7px; width: 6px; height: 6px; background-color: white; border-radius: 50%;"></div>',
-            iconSize: [20, 20],
-            popupAnchor: [0, -15]
-        });
-        
-        runnerMarker = L.marker([lat, lng], { icon: redPinIcon })
-            .bindPopup(`
+
+        function updateRunnerPosition(lat, lng, distance) {
+            if (!map) return;
+
+            console.log('📍 Преместване на:', lat, lng);
+
+            // Премахване на старите елементи
+            if (runnerMarker) {
+                map.removeLayer(runnerMarker);
+            }
+            if (runnerCircle) {
+                map.removeLayer(runnerCircle);
+            }
+
+            // Хубав червен пип (pin marker)
+            const redPinIcon = L.divIcon({
+                className: 'custom-pin',
+                html: '<div style="background-color: #e74c3c; width: 20px; height: 20px; border-radius: 50% 50% 50% 0; border: 3px solid white; transform: rotate(-45deg); box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div><div style="position: absolute; top: 5px; left: 7px; width: 6px; height: 6px; background-color: white; border-radius: 50%;"></div>',
+                iconSize: [20, 20],
+                popupAnchor: [0, -15]
+            });
+
+            runnerMarker = L.marker([lat, lng], {
+                    icon: redPinIcon
+                })
+                .bindPopup(`
                 <div style="text-align: center;">
                     <b>🏃‍♂️ БЕГАЧЪТ Е ТУК!</b><br>
                     📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
                     📏 ${distance.toFixed(1)} / 133 км
                 </div>
             `)
-            .addTo(map);
-        
-        // Червен кръг около пипа (радиус 50 метра)
-        runnerCircle = L.circle([lat, lng], {
-            color: '#e74c3c',
-            fillColor: '#e74c3c',
-            fillOpacity: 0.15,
-            radius: 50,
-            weight: 2
-        }).addTo(map);
-        
-        // Центриране
-        map.setView([lat, lng], 16);
-        
-        // Обнови дисплея
-        document.getElementById('coordDisplay').innerHTML = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
-        document.getElementById('progressBar').style.width = (distance / 133 * 100) + '%';
-    }
-    
-    function startTracking() {
-        // Първо зареждане
-        fetch('/current-runner-position')
-            .then(res => res.json())
-            .then(data => {
-                updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
-            })
-            .catch(err => console.error('Грешка:', err));
-        
-        // Периодично обновяване на всяка 1 секунда
-        setInterval(() => {
+                .addTo(map);
+
+            // Червен кръг около пипа (радиус 50 метра)
+            runnerCircle = L.circle([lat, lng], {
+                color: '#e74c3c',
+                fillColor: '#e74c3c',
+                fillOpacity: 0.15,
+                radius: 50,
+                weight: 2
+            }).addTo(map);
+
+            // Центриране
+            map.setView([lat, lng], 16);
+
+            // Обнови дисплея
+            document.getElementById('coordDisplay').innerHTML = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
+            document.getElementById('progressBar').style.width = (distance / 133 * 100) + '%';
+        }
+
+        function startTracking() {
+            // Първо зареждане
             fetch('/current-runner-position')
                 .then(res => res.json())
                 .then(data => {
                     updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
                 })
                 .catch(err => console.error('Грешка:', err));
-        }, 1000);
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(initMap, 100);
-    });
-</script>
 
-<style>
-    .custom-pin {
-        background: none;
-        border: none;
-    }
-    .custom-pin div:first-child {
-        animation: pulse 1.5s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: rotate(-45deg) scale(1); opacity: 1; }
-        50% { transform: rotate(-45deg) scale(1.3); opacity: 0.8; }
-    }
-</style>
+            // Периодично обновяване на всяка 1 секунда
+            setInterval(() => {
+                fetch('/current-runner-position')
+                    .then(res => res.json())
+                    .then(data => {
+                        updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data
+                            .distance));
+                    })
+                    .catch(err => console.error('Грешка:', err));
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initMap, 100);
+        });
+    </script>
+
+    <style>
+        .custom-pin {
+            background: none;
+            border: none;
+        }
+
+        .custom-pin div:first-child {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: rotate(-45deg) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: rotate(-45deg) scale(1.3);
+                opacity: 0.8;
+            }
+        }
+    </style>
 </body>
 
 </html>
