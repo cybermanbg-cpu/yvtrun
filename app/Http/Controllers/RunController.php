@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Run;
 use App\Models\Checkpoint;
 use App\Models\Donation;
+use App\Models\Volunteer;
 
 class RunController extends Controller
 {
@@ -13,12 +14,23 @@ class RunController extends Controller
         $run = Run::first();
         $checkpoints = Checkpoint::orderBy('order_position')->get();
         
-        // Вземаме данните за даренията
         $totalRaised = Donation::getTotalRaised();
         $donorsCount = Donation::getDonorsCount();
-        $goalAmount = 10000; // Цел: 10,000 лв.
+        $goalAmount = 10000;
         $percentage = ($totalRaised / $goalAmount) * 100;
         
-        return view('map', compact('run', 'checkpoints', 'totalRaised', 'donorsCount', 'goalAmount', 'percentage'));
+        $volunteersCount = Volunteer::confirmed()->count();
+        $volunteersByRole = Volunteer::getGroupedByRole();
+        $recentVolunteers = Volunteer::confirmed()->orderBy('created_at', 'desc')->limit(5)->get();
+        
+        $currentLat = $run->current_lat ?? 42.4833;
+        $currentLng = $run->current_lng ?? 26.5000;
+        $currentDistance = $run->distance_covered_km ?? 0;
+        
+        return view('map', compact(
+            'checkpoints', 'totalRaised', 'donorsCount', 'goalAmount', 'percentage',
+            'volunteersCount', 'volunteersByRole', 'recentVolunteers',
+            'currentLat', 'currentLng', 'currentDistance'
+        ));
     }
 }

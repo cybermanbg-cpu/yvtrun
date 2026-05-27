@@ -15,6 +15,7 @@ class Volunteer extends Model
         'phone',
         'time_slot',
         'checkpoint_location',
+        'additional_info',
         'confirmed'
     ];
     
@@ -51,5 +52,15 @@ class Volunteer extends Model
     public static function getGroupedByRole()
     {
         return self::confirmed()->get()->groupBy('role');
+    }
+    
+    // Брой по роли
+    public static function getCountByRole()
+    {
+        return self::confirmed()
+            ->selectRaw('role, count(*) as count')
+            ->groupBy('role')
+            ->pluck('count', 'role')
+            ->toArray();
     }
 }
