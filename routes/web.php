@@ -1,18 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\DonationStatsController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\RunController;
 use App\Http\Controllers\VolunteerController;
 use App\Models\Run;
 
+// Главна страница
 Route::get('/', [RunController::class, 'index'])->name('home');
 
-// API маршрут
-Route::get('/donations-stats', [DonationStatsController::class, 'index']);
-
-// Маршрут за текущата позиция (само веднъж)
+// API за текущата позиция на бегача
 Route::get('/current-runner-position', function() {
     $run = Run::first();
     return response()->json([
@@ -22,7 +19,7 @@ Route::get('/current-runner-position', function() {
     ]);
 });
 
-// Маршрут за обновяване на позицията
+// API за обновяване на позицията
 Route::post('/update-runner-location', function() {
     $data = request()->validate([
         'lat' => 'required|numeric',
@@ -54,14 +51,11 @@ Route::prefix('volunteers')->name('volunteers.')->group(function () {
     Route::get('/thankyou', [VolunteerController::class, 'thankyou'])->name('thankyou');
 });
 
-// Админ контрол
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/control', function () {
-        return view('admin.control');
-    })->name('admin.control');
-});
-
-// Бегач панел (прост HTML/JS без Livewire)
+// Панел на бегача
 Route::get('/simple-runner', function () {
     return view('simple-runner');
 })->name('simple.runner');
+
+Route::get('/runner-panel', function () {
+    return view('runner.panel');
+})->name('runner.panel');
