@@ -341,7 +341,7 @@
                 })
                 .bindPopup(`
                     <div style="text-align: center;">
-                        <b>🏃‍♂️ БЕГАЧЪТ Е ТУК!</b><br>
+                        <b>🏃‍♂️ АНТОН Е ТУК!</b><br>
                         📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
                         📏 ${distance.toFixed(1)} / 133 км
                     </div>
