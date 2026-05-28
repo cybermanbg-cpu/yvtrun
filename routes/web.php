@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\OwnTracksController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\RunController;
 use App\Http\Controllers\VolunteerController;
@@ -145,3 +146,5 @@ Route::delete('/clear-location-history', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/stats', [App\Http\Controllers\Admin\StatsController::class, 'index']);
 });
+
+Route::post('/owntracks/pub', [OwnTracksController::class, 'publish']);
