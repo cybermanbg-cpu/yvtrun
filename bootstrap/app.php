@@ -12,14 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Изключваме CSRF за OwnTracks маршрута
+
+        // Изключваме CSRF за всички OwnTracks маршрути
         $middleware->validateCsrfTokens(except: [
-            'owntracks/pub',
+            'owntracks',
+            'owntracks/*',
         ]);
-        
+
         $middleware->alias([
             'runner.auth' => \App\Http\Middleware\RunnerPanelAuth::class,
         ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
