@@ -452,7 +452,7 @@
                     closeButton: false
                 }).setHTML(`
         <div style="text-align: center; min-width: 170px;">
-            <b style="color:#e74c3c;">🏃‍♂️ БЕГАЧЪТ Е ТУК</b><br>
+            <b style="color:#e74c3c;">🏃‍♂️ Антон Е ТУК</b><br>
             📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
             📏 ${distance.toFixed(1)} км
         </div>
