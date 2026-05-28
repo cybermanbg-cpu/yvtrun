@@ -145,7 +145,7 @@
         <div class="flex gap-2 mb-4">
             <button onclick="centerOnRunner()"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
-                🎯 Центрирай върху бегача
+                🎯 Центрирай върху Антон
             </button>
             <button onclick="clearTrail()"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
