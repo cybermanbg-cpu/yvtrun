@@ -5,7 +5,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>🏃‍♂️ YVTRun - Благотворително бягане Ямбол до Велико Търново 133км</title>
+    <!-- ========== ОСНОВНИ МЕТА ТАГОВЕ ========== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description"
+        content="Присъединете се към благотворителното бягане от Ямбол до Велико Търново (133 км)! Следете локацията на бегача на живо, дарете или станете доброволец.">
+    <meta name="keywords"
+        content="бягане, благотворителност, Ямбол, Велико Търново, маратон, спорт, доброволци, дарение">
+    <meta name="author" content="YVTRun">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#e74c3c">
+
+    <!-- ========== OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Telegram) ========== -->
+    <meta property="og:title" content="🏃‍♂️ Антон бяга 133 км за благотворителност | YVTRun">
+    <meta property="og:description"
+        content="🏃‍♂️ 133 км благотворително бягане от Ямбол до Велико Търново. Следете на живо, дарете или станете доброволец!">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="bg_BG">
+    <meta property="og:site_name" content="YVTRun">
+    <meta property="og:image" content="{{ asset('images/og-image.jpg') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="YVTRun Антон - Благотворително бягане от Ямбол до Велико Търново">
+    <meta property="og:image:type" content="image/jpeg">
+
+    <!-- ========== TWITTER CARD ========== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="🏃‍♂️ Антон бяга 133 км за благотворителност | YVTRun">
+    <meta name="twitter:description"
+        content="Следете на живо благотворителното бягане от Ямбол до Велико Търново. Дарете или станете доброволец!">
+    <meta name="twitter:image" content="{{ asset('images/og-image.jpg') }}">
+    <meta name="twitter:site" content="@yvtrun">
+    <meta name="twitter:creator" content="@yvtrun">
+
+    <!-- ========== ДОПЪЛНИТЕЛНО ЗА WhatsApp И ДРУГИ ========== -->
+    <meta property="og:image:secure_url" content="{{ asset('images/og-image.jpg') }}">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- ========== ДИНАМИЧЕН TITLE (актуализира се с напредъка) ========== -->
+    <title>🏃‍♂️ YVTRun - Антон - Благотворително бягане Ямбол → Велико Търново 133км за 24 часа</title>
 
     <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -321,66 +363,66 @@
         }
 
         function updateRunnerPosition(lat, lng, distance) {
-    if (!map) return;
+            if (!map) return;
 
-    // Обнови UI информацията
-    document.getElementById('coordDisplay').innerHTML =
-        `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
-    document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
-    document.getElementById('progressBar').style.width = Math.min((distance / 133 * 100), 100) + '%';
+            // Обнови UI информацията
+            document.getElementById('coordDisplay').innerHTML =
+                `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
+            document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
+            document.getElementById('progressBar').style.width = Math.min((distance / 133 * 100), 100) + '%';
 
-    // === ДОБАВЯНЕ НА ТОЧКА КЪМ СЛЕДАТА ===
-    const newPoint = [lat, lng];
+            // === ДОБАВЯНЕ НА ТОЧКА КЪМ СЛЕДАТА ===
+            const newPoint = [lat, lng];
 
-    if (trailPoints.length === 0 || 
-        Math.hypot(trailPoints[trailPoints.length - 1][0] - lat, 
-                   trailPoints[trailPoints.length - 1][1] - lng) > 0.00008) {
-        
-        trailPoints.push(newPoint);
-    }
+            if (trailPoints.length === 0 ||
+                Math.hypot(trailPoints[trailPoints.length - 1][0] - lat,
+                    trailPoints[trailPoints.length - 1][1] - lng) > 0.00008) {
 
-    // Обновяване на следата
-    const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
-
-    if (map.getSource('trail')) {
-        map.getSource('trail').setData({
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: trailCoordinates
+                trailPoints.push(newPoint);
             }
-        });
-    } else {
-        map.addSource('trail', {
-            type: 'geojson',
-            data: {
-                type: 'Feature',
-                geometry: {
-                    type: 'LineString',
-                    coordinates: trailCoordinates
-                }
+
+            // Обновяване на следата
+            const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
+
+            if (map.getSource('trail')) {
+                map.getSource('trail').setData({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: trailCoordinates
+                    }
+                });
+            } else {
+                map.addSource('trail', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: trailCoordinates
+                        }
+                    }
+                });
+
+                map.addLayer({
+                    id: 'trail',
+                    type: 'line',
+                    source: 'trail',
+                    paint: {
+                        'line-color': '#e74c3c',
+                        'line-width': 6,
+                        'line-opacity': 0.85,
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    }
+                });
             }
-        });
 
-        map.addLayer({
-            id: 'trail',
-            type: 'line',
-            source: 'trail',
-            paint: {
-                'line-color': '#e74c3c',
-                'line-width': 6,
-                'line-opacity': 0.85,
-                'line-join': 'round',
-                'line-cap': 'round'
-            }
-        });
-    }
+            // === ТЕКУЩ ПИН ЗА БЕГАЧА ===
+            if (runnerMarker) runnerMarker.remove();
 
-    // === ТЕКУЩ ПИН ЗА БЕГАЧА ===
-    if (runnerMarker) runnerMarker.remove();
-
-    const pinDiv = document.createElement('div');
-    pinDiv.innerHTML = `
+            const pinDiv = document.createElement('div');
+            pinDiv.innerHTML = `
         <div style="
             background: #e74c3c;
             color: white;
@@ -399,24 +441,24 @@
         </div>
     `;
 
-    runnerMarker = new maplibregl.Marker({
-        element: pinDiv,
-        anchor: 'bottom',
-        offset: [0, 0]
-    })
-    .setLngLat([lng, lat])
-    .setPopup(new maplibregl.Popup({
-        offset: 40,
-        closeButton: false
-    }).setHTML(`
+            runnerMarker = new maplibregl.Marker({
+                    element: pinDiv,
+                    anchor: 'bottom',
+                    offset: [0, 0]
+                })
+                .setLngLat([lng, lat])
+                .setPopup(new maplibregl.Popup({
+                    offset: 40,
+                    closeButton: false
+                }).setHTML(`
         <div style="text-align: center; min-width: 170px;">
             <b style="color:#e74c3c;">🏃‍♂️ БЕГАЧЪТ Е ТУК</b><br>
             📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
             📏 ${distance.toFixed(1)} км
         </div>
     `))
-    .addTo(map);
-}
+                .addTo(map);
+        }
 
         function startTracking() {
             // Зареждане на старата следа
