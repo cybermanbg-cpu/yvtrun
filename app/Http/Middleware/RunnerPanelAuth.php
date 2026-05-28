@@ -5,6 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
+// https://вашият-сайт.com/api/owntracks/pub?u=runner1&d=phone
+
+
 class RunnerPanelAuth
 {
     public function handle(Request $request, Closure $next)

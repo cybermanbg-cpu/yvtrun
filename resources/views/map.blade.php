@@ -12,7 +12,7 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <style>
         .custom-pin {
             background: none;
@@ -24,20 +24,31 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: rotate(-45deg) scale(1);
                 opacity: 1;
             }
+
             50% {
                 transform: rotate(-45deg) scale(1.3);
                 opacity: 0.8;
             }
         }
-        
+
         @keyframes pulse-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
+
         .animate-pulse {
             animation: pulse-red 1.5s ease-in-out infinite;
         }
@@ -82,7 +93,7 @@
             </div>
         </div>
 
-         <!-- Action Buttons -->
+        <!-- Action Buttons -->
         <div class="my-8 flex flex-wrap gap-4 justify-center">
             <a href="{{ route('volunteers.index') }}"
                 class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition shadow-lg transform hover:scale-105">
@@ -100,10 +111,12 @@
 
         <!-- Бутони за управление на картата -->
         <div class="flex gap-2 mb-4">
-            <button onclick="centerOnRunner()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
+            <button onclick="centerOnRunner()"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🎯 Центрирай върху бегача
             </button>
-            <button onclick="clearTrail()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
+            <button onclick="clearTrail()"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🧹 Изчисти следата
             </button>
         </div>
@@ -121,7 +134,8 @@
                         <span class="font-mono text-2xl font-bold" id="distanceDisplay">0 / 133 км</span>
                     </div>
                     <div class="w-full bg-white/30 rounded-full h-4 overflow-hidden">
-                        <div class="bg-yellow-400 h-4 rounded-full transition-all duration-500" id="progressBar" style="width: 0%"></div>
+                        <div class="bg-yellow-400 h-4 rounded-full transition-all duration-500" id="progressBar"
+                            style="width: 0%"></div>
                     </div>
                     <div id="coordDisplay" class="text-xs mt-2 opacity-75"></div>
                 </div>
@@ -153,7 +167,8 @@
                 @if ($liveVideo)
                     <div class="mb-8">
                         <div class="relative">
-                            <div class="absolute top-2 left-2 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                            <div
+                                class="absolute top-2 left-2 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
                                 🔴 НА ЖИВО
                             </div>
                             <div class="aspect-video w-full rounded-lg overflow-hidden shadow-lg">
@@ -235,49 +250,54 @@
         let trailPoints = [];
 
         function initMap() {
-    document.getElementById('map-loading').style.display = 'none';
-    document.getElementById('map').style.display = 'block';
-    
-    map = L.map('map').setView([42.4833, 26.5000], 8);
+            document.getElementById('map-loading').style.display = 'none';
+            document.getElementById('map').style.display = 'block';
 
-    // Разрешаваме свободно движение и зуум
-    map.dragging.enable();
-    map.touchZoom.enable();
-    map.scrollWheelZoom.enable();
-    map.doubleClickZoom.enable();
-    map.zoomControl.enable();
+            map = L.map('map').setView([42.4833, 26.5000], 8);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+            // Разрешаваме свободно движение и зуум
+            map.dragging.enable();
+            map.touchZoom.enable();
+            map.scrollWheelZoom.enable();
+            map.doubleClickZoom.enable();
+            map.zoomControl.enable();
 
-    // Контролни точки и маршрут
-    const checkpoints = @json($checkpoints);
-    const routePoints = [];
-    
-    checkpoints.forEach(cp => {
-        const lat = parseFloat(cp.lat);
-        const lng = parseFloat(cp.lng);
-        routePoints.push([lat, lng]);
-        
-        // Емоджи за контролните точки
-        const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
-        L.marker([lat, lng], {
-            icon: L.divIcon({ html: emoji, iconSize: [28, 28] })
-        }).bindPopup(`${cp.name}<br>📏 ${cp.distance_km} км`).addTo(map);
-    });
-    
-    // 👇 ДОБАВИ ТОВА 👇 - Официален маршрут (линия между точките)
-    L.polyline(routePoints, {
-        color: '#2980b9',        // Син цвят
-        weight: 5,               // Дебелина
-        opacity: 0.8,
-        lineJoin: 'round',
-        dashArray: '8, 6'        // Пунктирана за разлика от реалната следа
-    }).addTo(map).bindPopup('🏃‍♂️ Официален маршрут (133 км)');
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
 
-    startTracking();
-}
+            // Контролни точки и маршрут
+            const checkpoints = @json($checkpoints);
+            const routePoints = [];
+
+            checkpoints.forEach(cp => {
+                const lat = parseFloat(cp.lat);
+                const lng = parseFloat(cp.lng);
+                routePoints.push([lat, lng]);
+
+                // Емоджи за контролните точки
+                const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
+                L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: emoji,
+                        iconSize: [28, 28]
+                    })
+                }).bindPopup(`${cp.name}<br>📏 ${cp.distance_km} км`).addTo(map);
+            });
+
+            // 👇 ДОБАВИ ТОВА 👇 - Официален маршрут (линия между точките)
+            L.polyline(routePoints, {
+                color: '#2980b9', // Син цвят
+                weight: 5, // Дебелина
+                opacity: 0.8,
+                lineJoin: 'round',
+                dashArray: '8, 6' // Пунктирана за разлика от реалната следа
+            }).addTo(map).bindPopup('🏃‍♂️ Официален маршрут (133 км)');
+
+            loadLocationHistory();
+
+            startTracking();
+        }
 
         function updateRunnerPosition(lat, lng, distance) {
             if (!map) return;
@@ -316,7 +336,9 @@
                 popupAnchor: [0, -15]
             });
 
-            runnerMarker = L.marker([lat, lng], { icon: redPinIcon })
+            runnerMarker = L.marker([lat, lng], {
+                    icon: redPinIcon
+                })
                 .bindPopup(`
                     <div style="text-align: center;">
                         <b>🏃‍♂️ БЕГАЧЪТ Е ТУК!</b><br>
@@ -336,7 +358,8 @@
             }).addTo(map);
 
             // Обнови дисплея
-            document.getElementById('coordDisplay').innerHTML = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
+            document.getElementById('coordDisplay').innerHTML =
+                `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
             document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
             document.getElementById('progressBar').style.width = (distance / 133 * 100) + '%';
         }
@@ -373,7 +396,8 @@
                 fetch('/current-runner-position')
                     .then(res => res.json())
                     .then(data => {
-                        updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
+                        updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data
+                            .distance));
                         saveTrail();
                     })
                     .catch(err => console.error('Грешка:', err));
@@ -388,7 +412,9 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
-                    body: JSON.stringify({ trail: trailPoints })
+                    body: JSON.stringify({
+                        trail: trailPoints
+                    })
                 }).catch(err => console.error('Грешка при запазване на следа:', err));
             }
         }
@@ -412,6 +438,47 @@
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(initMap, 200);
         });
+
+        // ново
+        // Зареждане на историческите локации
+        async function loadLocationHistory() {
+            try {
+                const response = await fetch('/get-location-history');
+                const data = await response.json();
+
+                if (data.history && data.history.length > 0) {
+                    const historyPoints = data.history.map(point => [point.lat, point.lng]);
+
+                    // История като тъмночервена линия
+                    const historyLine = L.polyline(historyPoints, {
+                        color: '#c0392b',
+                        weight: 3,
+                        opacity: 0.5,
+                        lineJoin: 'round'
+                    }).addTo(map);
+
+                    // Добави малки точки за всяка историческа локация
+                    data.history.forEach(point => {
+                        L.circle([point.lat, point.lng], {
+                            color: '#e74c3c',
+                            fillColor: '#e74c3c',
+                            fillOpacity: 0.3,
+                            radius: 5,
+                            weight: 1
+                        }).bindPopup(`
+                    <b>📍 Историческа точка</b><br>
+                    🕐 ${new Date(point.recorded_at).toLocaleString()}<br>
+                    📏 ${point.distance_km} км
+                    ${point.speed ? `<br>⚡ ${point.speed} км/ч` : ''}
+                `).addTo(map);
+                    });
+
+                    console.log(`📜 Заредени ${data.history.length} исторически локации`);
+                }
+            } catch (error) {
+                console.error('Грешка при зареждане на историята:', error);
+            }
+        }
     </script>
 </body>
 

@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\RunController;
 use App\Http\Controllers\VolunteerController;
+use App\Models\LocationHistory;
 use App\Models\Run;
+use Illuminate\Support\Facades\Route;
 
 // Главна страница
 Route::get('/', [RunController::class, 'index'])->name('home');
 
 // API за текущата позиция на бегача
-Route::get('/current-runner-position', function() {
+Route::get('/current-runner-position', function () {
     $run = Run::first();
     return response()->json([
         'lat' => (float) $run->current_lat,
@@ -20,20 +21,20 @@ Route::get('/current-runner-position', function() {
 });
 
 // API за обновяване на позицията
-Route::post('/update-runner-location', function() {
+Route::post('/update-runner-location', function () {
     $data = request()->validate([
         'lat' => 'required|numeric',
         'lng' => 'required|numeric',
         'distance' => 'required|numeric'
     ]);
-    
+
     $run = Run::first();
     $run->update([
         'current_lat' => $data['lat'],
         'current_lng' => $data['lng'],
         'distance_covered_km' => $data['distance']
     ]);
-    
+
     return response()->json(['success' => true]);
 });
 
@@ -64,12 +65,12 @@ Route::get('/runner-panel', function () {
 Route::post('/runner-panel', function () {
     $password = request()->input('password');
     $correctPassword = env('RUNNER_PANEL_PASSWORD', 'Yambol2025');
-    
+
     if ($password === $correctPassword) {
         session()->put('runner_panel_authenticated', true);
         return redirect()->route('runner.panel');
     }
-    
+
     return back()->withErrors(['password' => 'Невалидна парола!']);
 });
 
@@ -80,7 +81,7 @@ Route::post('/runner-panel/logout', function () {
 })->name('runner.panel.logout');
 
 // Запазване на следата
-Route::post('/save-runner-trail', function() {
+Route::post('/save-runner-trail', function () {
     $data = request()->validate(['trail' => 'required|array']);
     $run = Run::first();
     $run->update(['trail_points' => json_encode($data['trail'])]);
@@ -88,7 +89,59 @@ Route::post('/save-runner-trail', function() {
 });
 
 // Вземане на следата
-Route::get('/get-runner-trail', function() {
+Route::get('/get-runner-trail', function () {
     $run = Run::first();
     return response()->json(['trail' => json_decode($run->trail_points ?? '[]', true)]);
+});
+
+Route::post('/update-runner-location', function () {
+    $data = request()->validate([
+        'lat' => 'required|numeric',
+        'lng' => 'required|numeric',
+        'distance' => 'required|numeric',
+        'speed' => 'nullable|numeric',
+        'battery' => 'nullable|numeric',
+        'accuracy' => 'nullable|integer',
+        'device_id' => 'nullable|string'
+    ]);
+
+    // Обнови текущата позиция
+    $run = Run::first();
+    $run->update([
+        'current_lat' => $data['lat'],
+        'current_lng' => $data['lng'],
+        'distance_covered_km' => $data['distance']
+    ]);
+
+    // Запази в историята
+    LocationHistory::create([
+        'lat' => $data['lat'],
+        'lng' => $data['lng'],
+        'distance_km' => $data['distance'],
+        'speed' => $data['speed'] ?? null,
+        'battery' => $data['battery'] ?? null,
+        'accuracy' => $data['accuracy'] ?? null,
+        'device_id' => $data['device_id'] ?? null,
+        'recorded_at' => now()
+    ]);
+
+    return response()->json(['success' => true]);
+});
+
+Route::get('/get-location-history', function () {
+    $history = LocationHistory::orderBy('recorded_at', 'asc')
+        ->limit(500)  // Максимум 500 точки
+        ->get(['lat', 'lng', 'distance_km', 'speed', 'recorded_at']);
+
+    return response()->json(['history' => $history]);
+});
+
+// API за изчистване на историята (опционално)
+Route::delete('/clear-location-history', function () {
+    LocationHistory::truncate();
+    return response()->json(['success' => true]);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/stats', [App\Http\Controllers\Admin\StatsController::class, 'index']);
 });
