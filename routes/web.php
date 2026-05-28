@@ -21,6 +21,11 @@ Route::get('/current-runner-position', function () {
     ]);
 });
 
+// Прост панел на бегача (без парола, само HTML/JS)
+Route::get('/simple-runner', function () {
+    return view('simple-runner');
+})->name('simple.runner');
+
 // Дарения
 Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/', [DonationController::class, 'index'])->name('index');
