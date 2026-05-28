@@ -134,4 +134,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/stats', [App\Http\Controllers\Admin\StatsController::class, 'index']);
 });
 
-Route::post('/owntracks/pub', [OwnTracksController::class, 'publish']);
+// OwnTracks Webhook
+Route::post('/owntracks', [App\Http\Controllers\Api\OwnTracksController::class, 'publish'])
+     ->name('owntracks.publish');
+
+// По желание можеш да добавиш и query параметри за лесно тестване:
+Route::post('/owntracks/test', [App\Http\Controllers\Api\OwnTracksController::class, 'publish']);

@@ -7,50 +7,40 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>🏃‍♂️ YVTRun - Благотворително бягане Ямбол до Велико Търново 133км</title>
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        .custom-pin {
+        .runner-marker {
             background: none;
             border: none;
+            font-size: 42px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.4));
+            animation: bounce 0.6s infinite;
+            user-select: none;
+            pointer-events: auto;
         }
 
-        .custom-pin div:first-child {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
+        @keyframes bounce {
 
             0%,
             100% {
-                transform: rotate(-45deg) scale(1);
-                opacity: 1;
+                transform: translateY(0);
             }
 
             50% {
-                transform: rotate(-45deg) scale(1.3);
-                opacity: 0.8;
+                transform: translateY(-12px);
             }
-        }
-
-        @keyframes pulse-red {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .animate-pulse {
-            animation: pulse-red 1.5s ease-in-out infinite;
         }
     </style>
 </head>
@@ -119,6 +109,10 @@
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🧹 Изчисти следата
             </button>
+            <button onclick="resetMapView()"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition shadow">
+                🗺️ Цялата карта
+            </button>
         </div>
 
         <!-- Карта -->
@@ -163,7 +157,6 @@
                     Видео от бягането
                 </h2>
 
-                <!-- ЛАЙФ ВИДЕО -->
                 @if ($liveVideo)
                     <div class="mb-8">
                         <div class="relative">
@@ -189,7 +182,6 @@
                     </div>
                 @endif
 
-                <!-- МИНАЛИ ВИДЕА -->
                 @if ($pastVideos->count() > 0)
                     <div>
                         <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
@@ -240,129 +232,191 @@
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
+
     <script>
         let map = null;
         let runnerMarker = null;
-        let runnerCircle = null;
-        let trailLine = null;
         let trailPoints = [];
+        // let historyCircles = [];
 
         function initMap() {
             document.getElementById('map-loading').style.display = 'none';
             document.getElementById('map').style.display = 'block';
 
-            map = L.map('map').setView([42.4833, 26.5000], 8);
-
-            // Разрешаваме свободно движение и зуум
-            map.dragging.enable();
-            map.touchZoom.enable();
-            map.scrollWheelZoom.enable();
-            map.doubleClickZoom.enable();
-            map.zoomControl.enable();
-
-            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            // Контролни точки и маршрут
-            const checkpoints = @json($checkpoints);
-            const routePoints = [];
-
-            checkpoints.forEach(cp => {
-                const lat = parseFloat(cp.lat);
-                const lng = parseFloat(cp.lng);
-                routePoints.push([lat, lng]);
-
-                // Емоджи за контролните точки
-                const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
-                L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        html: emoji,
-                        iconSize: [28, 28]
-                    })
-                }).bindPopup(`${cp.name}<br>📏 ${cp.distance_km} км`).addTo(map);
+            map = new maplibregl.Map({
+                container: 'map',
+                style: {
+                    version: 8,
+                    sources: {
+                        'osm': {
+                            type: 'raster',
+                            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        }
+                    },
+                    layers: [{
+                        id: 'osm',
+                        type: 'raster',
+                        source: 'osm'
+                    }]
+                },
+                center: [26.5000, 42.4833], // [lng, lat]
+                zoom: 8
             });
 
-            // 👇 ДОБАВИ ТОВА 👇 - Официален маршрут (линия между точките)
-            L.polyline(routePoints, {
-                color: '#2980b9', // Син цвят
-                weight: 5, // Дебелина
-                opacity: 0.8,
-                lineJoin: 'round',
-                dashArray: '8, 6' // Пунктирана за разлика от реалната следа
-            }).addTo(map).bindPopup('🏃‍♂️ Официален маршрут (133 км)');
+            map.addControl(new maplibregl.NavigationControl(), 'top-right');
+            map.addControl(new maplibregl.FullscreenControl());
+            map.addControl(new maplibregl.ScaleControl());
 
-            loadLocationHistory();
+            map.on('load', () => {
+                const checkpoints = @json($checkpoints);
+                const routePoints = [];
 
-            startTracking();
+                checkpoints.forEach(cp => {
+                    const lat = parseFloat(cp.lat);
+                    const lng = parseFloat(cp.lng);
+                    routePoints.push([lng, lat]); // [lng, lat]
+
+                    const emoji = cp.distance_km === 0 ? '🏁' : (cp.distance_km === 133 ? '🏆' : '📍');
+                    const markerDiv = document.createElement('div');
+                    markerDiv.innerHTML = emoji;
+                    markerDiv.style.fontSize = '32px';
+                    markerDiv.style.cursor = 'pointer';
+
+                    new maplibregl.Marker(markerDiv)
+                        .setLngLat([lng, lat]) // [lng, lat]
+                        .setPopup(new maplibregl.Popup().setHTML(`${cp.name}<br>📏 ${cp.distance_km} км`))
+                        .addTo(map);
+                });
+
+                // Официален маршрут
+                map.addSource('route', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: routePoints // вече са [lng, lat]
+                        }
+                    }
+                });
+
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: 'route',
+                    paint: {
+                        'line-color': '#2980b9',
+                        'line-width': 5,
+                        'line-opacity': 0.8,
+                        'line-dasharray': [8, 6]
+                    }
+                });
+
+                loadLocationHistory();
+                startTracking();
+            });
         }
 
         function updateRunnerPosition(lat, lng, distance) {
-            if (!map) return;
+    if (!map) return;
 
-            console.log('📍 Преместване на:', lat, lng);
+    // Обнови UI информацията
+    document.getElementById('coordDisplay').innerHTML =
+        `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
+    document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
+    document.getElementById('progressBar').style.width = Math.min((distance / 133 * 100), 100) + '%';
 
-            // Добавяне на точката в следата
-            if (trailPoints.length === 0 ||
-                trailPoints[trailPoints.length - 1][0] !== lat ||
-                trailPoints[trailPoints.length - 1][1] !== lng) {
+    // === ДОБАВЯНЕ НА ТОЧКА КЪМ СЛЕДАТА ===
+    const newPoint = [lat, lng];
 
-                trailPoints.push([lat, lng]);
+    if (trailPoints.length === 0 || 
+        Math.hypot(trailPoints[trailPoints.length - 1][0] - lat, 
+                   trailPoints[trailPoints.length - 1][1] - lng) > 0.00008) {
+        
+        trailPoints.push(newPoint);
+    }
 
-                if (trailLine) {
-                    map.removeLayer(trailLine);
-                }
+    // Обновяване на следата
+    const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
 
-                trailLine = L.polyline(trailPoints, {
-                    color: '#e74c3c',
-                    weight: 4,
-                    opacity: 0.7,
-                    lineJoin: 'round',
-                    lineCap: 'round'
-                }).addTo(map);
+    if (map.getSource('trail')) {
+        map.getSource('trail').setData({
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: trailCoordinates
             }
+        });
+    } else {
+        map.addSource('trail', {
+            type: 'geojson',
+            data: {
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: trailCoordinates
+                }
+            }
+        });
 
-            // Премахване на старите елементи
-            if (runnerMarker) map.removeLayer(runnerMarker);
-            if (runnerCircle) map.removeLayer(runnerCircle);
+        map.addLayer({
+            id: 'trail',
+            type: 'line',
+            source: 'trail',
+            paint: {
+                'line-color': '#e74c3c',
+                'line-width': 6,
+                'line-opacity': 0.85,
+                'line-join': 'round',
+                'line-cap': 'round'
+            }
+        });
+    }
 
-            // Червен пип
-            const redPinIcon = L.divIcon({
-                className: 'custom-pin',
-                html: '<div style="background-color: #e74c3c; width: 20px; height: 20px; border-radius: 50% 50% 50% 0; border: 3px solid white; transform: rotate(-45deg); box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div><div style="position: absolute; top: 5px; left: 7px; width: 6px; height: 6px; background-color: white; border-radius: 50%;"></div>',
-                iconSize: [20, 20],
-                popupAnchor: [0, -15]
-            });
+    // === ТЕКУЩ ПИН ЗА БЕГАЧА ===
+    if (runnerMarker) runnerMarker.remove();
 
-            runnerMarker = L.marker([lat, lng], {
-                    icon: redPinIcon
-                })
-                .bindPopup(`
-                    <div style="text-align: center;">
-                        <b>🏃‍♂️ АНТОН Е ТУК!</b><br>
-                        📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
-                        📏 ${distance.toFixed(1)} / 133 км
-                    </div>
-                `)
-                .addTo(map);
+    const pinDiv = document.createElement('div');
+    pinDiv.innerHTML = `
+        <div style="
+            background: #e74c3c;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 50% 50% 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            box-shadow: 0 5px 12px rgba(231, 76, 60, 0.6);
+            transform: rotate(-45deg);
+            border: 3px solid white;
+        ">
+            <span style="transform: rotate(45deg);">🏃</span>
+        </div>
+    `;
 
-            // Червен кръг
-            runnerCircle = L.circle([lat, lng], {
-                color: '#e74c3c',
-                fillColor: '#e74c3c',
-                fillOpacity: 0.15,
-                radius: 50,
-                weight: 2
-            }).addTo(map);
-
-            // Обнови дисплея
-            document.getElementById('coordDisplay').innerHTML =
-                `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} | 🛤️ Точки: ${trailPoints.length}`;
-            document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
-            document.getElementById('progressBar').style.width = (distance / 133 * 100) + '%';
-        }
+    runnerMarker = new maplibregl.Marker({
+        element: pinDiv,
+        anchor: 'bottom',
+        offset: [0, 0]
+    })
+    .setLngLat([lng, lat])
+    .setPopup(new maplibregl.Popup({
+        offset: 40,
+        closeButton: false
+    }).setHTML(`
+        <div style="text-align: center; min-width: 170px;">
+            <b style="color:#e74c3c;">🏃‍♂️ БЕГАЧЪТ Е ТУК</b><br>
+            📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+            📏 ${distance.toFixed(1)} км
+        </div>
+    `))
+    .addTo(map);
+}
 
         function startTracking() {
             // Зареждане на старата следа
@@ -371,17 +425,20 @@
                 .then(data => {
                     if (data.trail && data.trail.length > 0) {
                         trailPoints = data.trail;
-                        trailLine = L.polyline(trailPoints, {
-                            color: '#e74c3c',
-                            weight: 4,
-                            opacity: 0.7,
-                            lineJoin: 'round',
-                            lineCap: 'round'
-                        }).addTo(map);
+                        const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
+                        if (map.getSource('trail')) {
+                            map.getSource('trail').setData({
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'LineString',
+                                    coordinates: trailCoordinates
+                                }
+                            });
+                        }
                         console.log('🛤️ Заредена следа с', trailPoints.length, 'точки');
                     }
                 })
-                .catch(err => console.error('Грешка при зареждане на следата:', err));
+                .catch(err => console.error('Грешка:', err));
 
             // Първо зареждане
             fetch('/current-runner-position')
@@ -405,8 +462,9 @@
         }
 
         function saveTrail() {
-            if (trailPoints.length > 0) {
-                fetch('/save-runner-trail', {
+            if (trailPoints.length < 2) return; // няма смисъл да пазим ако има само 1 точка
+
+            fetch('/save-runner-trail', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -415,70 +473,125 @@
                     body: JSON.stringify({
                         trail: trailPoints
                     })
-                }).catch(err => console.error('Грешка при запазване на следа:', err));
-            }
+                })
+                .then(res => {
+                    if (!res.ok) console.warn('Trail save warning:', res.status);
+                })
+                .catch(err => console.error('Грешка при запис на следата:', err));
         }
 
         function centerOnRunner() {
             if (runnerMarker) {
-                const pos = runnerMarker.getLatLng();
-                map.setView([pos.lat, pos.lng], 16);
+                const lngLat = runnerMarker.getLngLat();
+                map.flyTo({
+                    center: [lngLat.lng, lngLat.lat],
+                    zoom: 15,
+                    duration: 1000
+                });
             }
         }
 
+        function resetMapView() {
+            map.flyTo({
+                center: [26.5000, 42.4833],
+                zoom: 8,
+                duration: 1000
+            });
+        }
+
         function clearTrail() {
-            if (trailLine) {
-                map.removeLayer(trailLine);
-            }
             trailPoints = [];
+            if (map.getSource('trail')) {
+                map.getSource('trail').setData({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: []
+                    }
+                });
+            }
             document.getElementById('coordDisplay').innerHTML = `📍 Следата е изчистена`;
             saveTrail();
+        }
+
+        // async function loadLocationHistory() {
+        //     try {
+        //         const response = await fetch('/get-location-history');
+        //         const data = await response.json();
+
+        //         if (data.history && data.history.length > 0) {
+        //             const historyPoints = data.history.map(point => [point.lng, point.lat]); // [lng, lat]
+
+        //             if (map.getSource('history')) {
+        //                 map.getSource('history').setData({
+        //                     type: 'Feature',
+        //                     geometry: {
+        //                         type: 'LineString',
+        //                         coordinates: historyPoints
+        //                     }
+        //                 });
+        //             } else {
+        //                 map.addSource('history', {
+        //                     type: 'geojson',
+        //                     data: {
+        //                         type: 'Feature',
+        //                         geometry: {
+        //                             type: 'LineString',
+        //                             coordinates: historyPoints
+        //                         }
+        //                     }
+        //                 });
+
+        //                 map.addLayer({
+        //                     id: 'history',
+        //                     type: 'line',
+        //                     source: 'history',
+        //                     paint: {
+        //                         'line-color': '#c0392b',
+        //                         'line-width': 3,
+        //                         'line-opacity': 0.5
+        //                     }
+        //                 });
+        //             }
+
+        //             historyCircles.forEach(circle => circle.remove());
+        //             historyCircles = [];
+
+        //             data.history.forEach(point => {
+        //                 const circleDiv = document.createElement('div');
+        //                 circleDiv.style.width = '8px';
+        //                 circleDiv.style.height = '8px';
+        //                 circleDiv.style.backgroundColor = '#e74c3c';
+        //                 circleDiv.style.borderRadius = '50%';
+        //                 circleDiv.style.border = '1px solid white';
+
+        //                 const marker = new maplibregl.Marker(circleDiv)
+        //                     .setLngLat([point.lng, point.lat])
+        //                     .setPopup(new maplibregl.Popup().setHTML(`
+    //                     <b>📍 Историческа точка</b><br>
+    //                     🕐 ${new Date(point.recorded_at).toLocaleString()}<br>
+    //                     📏 ${point.distance_km} км
+    //                     ${point.speed ? `<br>⚡ ${point.speed} км/ч` : ''}
+    //                 `))
+        //                     .addTo(map);
+
+        //                 historyCircles.push(marker);
+        //             });
+
+        //             console.log(`📜 Заредени ${data.history.length} исторически локации`);
+        //         }
+        //     } catch (error) {
+        //         console.error('Грешка при зареждане на историята:', error);
+        //     }
+        // }
+        async function loadLocationHistory() {
+            // Временно изключено - не искаме пинове на всяка минала точка
+            console.log('📜 Зареждането на исторически точки е изключено (само следата се използва)');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(initMap, 200);
         });
-
-        // ново
-        // Зареждане на историческите локации
-        async function loadLocationHistory() {
-            try {
-                const response = await fetch('/get-location-history');
-                const data = await response.json();
-
-                if (data.history && data.history.length > 0) {
-                    const historyPoints = data.history.map(point => [point.lat, point.lng]);
-
-                    // История като тъмночервена линия
-                    const historyLine = L.polyline(historyPoints, {
-                        color: '#c0392b',
-                        weight: 3,
-                        opacity: 0.5,
-                        lineJoin: 'round'
-                    }).addTo(map);
-
-                    // Добави малки точки за всяка историческа локация
-                    data.history.forEach(point => {
-                        L.circle([point.lat, point.lng], {
-                            color: '#e74c3c',
-                            fillColor: '#e74c3c',
-                            fillOpacity: 0.3,
-                            radius: 5,
-                            weight: 1
-                        }).bindPopup(`
-                    <b>📍 Историческа точка</b><br>
-                    🕐 ${new Date(point.recorded_at).toLocaleString()}<br>
-                    📏 ${point.distance_km} км
-                    ${point.speed ? `<br>⚡ ${point.speed} км/ч` : ''}
-                `).addTo(map);
-                    });
-
-                    console.log(`📜 Заредени ${data.history.length} исторически локации`);
-                }
-            } catch (error) {
-                console.error('Грешка при зареждане на историята:', error);
-            }
-        }
     </script>
 </body>
 

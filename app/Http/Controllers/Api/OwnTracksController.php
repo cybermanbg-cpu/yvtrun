@@ -3,91 +3,87 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Run;
 use App\Models\LocationHistory;
+use App\Models\Run;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OwnTracksController extends Controller
 {
     public function publish(Request $request)
     {
-        // 1. Вземаме JSON payload-а
         $payload = $request->getContent();
         $data = json_decode($payload, true);
-        
-        // 2. Игнорираме празните payload-и
-        if (empty($payload) || $payload === '[]') {
+
+        // Логване за debugging
+        Log::info('OwnTracks received payload', [
+            'headers' => $request->headers->all(),
+            'payload' => $data
+        ]);
+
+        if (!$data || !isset($data['_type']) || $data['_type'] !== 'location') {
             return response()->json([]);
         }
-        
-        // 3. Вземаме username и device от headers (OwnTracks ги праща)
-        $username = $request->header('X-Limit-U');
-        $device = $request->header('X-Limit-D');
-        
-        // Може да се вземат и от URL параметри
-        $username = $username ?? $request->query('u');
-        $device = $device ?? $request->query('d');
-        
-        // 4. Проверяваме дали това е съобщение за локация
-        if (isset($data['_type']) && $data['_type'] === 'location') {
-            
-            // 5. Извличаме всички данни
-            $lat = $data['lat'] ?? null;
-            $lon = $data['lon'] ?? null;
-            $tst = $data['tst'] ?? time();  // Unix timestamp
-            $batt = $data['batt'] ?? null;   // Батерия (%)
-            $tid = $data['tid'] ?? null;     // Tracker ID
-            $acc = $data['acc'] ?? null;     // Точност в метри
-            $vel = $data['vel'] ?? null;     // Скорост (km/h)
-            $alt = $data['alt'] ?? null;     // Надморска височина
-            $vac = $data['vac'] ?? null;     // Вертикална точност
-            
-            // 6. Изчисляваме текущото разстояние от маршрута
-            $distance = $this->calculateDistanceOnRoute($lat, $lon);
-            
-            if ($lat && $lon) {
-                // 7. Записваме в таблицата 'runs' (текуща позиция)
-                $run = Run::first();
-                if ($run) {
-                    $run->update([
-                        'current_lat' => $lat,
-                        'current_lng' => $lon,
-                        'distance_covered_km' => $distance,
-                    ]);
-                }
-                
-                // 8. Запазваме в историята (LocationHistory)
-                try {
-                    LocationHistory::create([
-                        'lat' => $lat,
-                        'lng' => $lon,
-                        'distance_km' => $distance,
-                        'speed' => $vel,
-                        'battery' => $batt,
-                        'accuracy' => $acc,
-                        'altitude' => $alt,
-                        'device_id' => $device ?? $tid,
-                        'user_id' => $username,
-                        'recorded_at' => date('Y-m-d H:i:s', $tst),
-                    ]);
-                    
-                    // Лог за успех (може да се махне в production)
-                    \Log::info('OwnTracks location saved', [
-                        'lat' => $lat,
-                        'lon' => $lon,
-                        'distance' => $distance,
-                        'user' => $username,
-                        'device' => $device
-                    ]);
-                    
-                } catch (\Exception $e) {
-                    \Log::error('Error saving location history: ' . $e->getMessage());
-                }
-            }
+
+        $lat = $data['lat'] ?? null;
+        $lon = $data['lon'] ?? null;
+
+        if (!$lat || !$lon) {
+            Log::warning('OwnTracks: Missing lat/lon');
+            return response()->json([], 400);
         }
-        
-        // 9. OwnTracks очаква JSON масив (може да върнем команди, ако искаме)
-        return response()->json([]);
+
+        // Username и device - OwnTracks често ги праща по различни начини
+        $username = $request->header('X-Limit-U') 
+                 ?? $request->query('u') 
+                 ?? $data['tid'] 
+                 ?? 'yvt-runner';
+
+        $device = $request->header('X-Limit-D') 
+               ?? $request->query('d') 
+               ?? $data['device'] 
+               ?? 'owntracks';
+
+        $distance = $this->calculateDistanceOnRoute($lat, $lon);
+
+        try {
+            // Обновяване на текущата позиция
+            $run = Run::firstOrCreate(['id' => 1]);
+
+            $run->update([
+                'current_lat' => $lat,
+                'current_lng' => $lon,
+                'distance_covered_km' => $distance,
+                'last_updated_at' => now(),
+            ]);
+
+            // Запис в историята
+            LocationHistory::create([
+                'lat'          => $lat,
+                'lng'          => $lon,
+                'distance_km'  => $distance,
+                'speed'        => $data['vel'] ?? null,
+                'battery'      => $data['batt'] ?? null,
+                'accuracy'     => $data['acc'] ?? null,
+                'altitude'     => $data['alt'] ?? null,
+                'device_id'    => $device,
+                'user_id'      => $username,
+                'recorded_at'  => date('Y-m-d H:i:s', $data['tst'] ?? time()),
+            ]);
+
+            Log::info('OwnTracks location saved', [
+                'lat' => $lat,
+                'lon' => $lon,
+                'distance' => $distance,
+                'user' => $username
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('OwnTracks error: ' . $e->getMessage());
+            return response()->json(['error' => 'Internal error'], 500);
+        }
+
+        return response()->json([]); // OwnTracks изисква празен отговор
     }
     
     /**
