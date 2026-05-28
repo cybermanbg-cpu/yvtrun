@@ -2,20 +2,25 @@
 
 use App\Http\Controllers\Api\DonationStatsController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
+// === DONATION STATS ===
 Route::get('/donations-stats', [DonationStatsController::class, 'index']);
 
-// Основен маршрут
-Route::post('/owntracks', [App\Http\Controllers\Api\OwnTracksController::class, 'publish']);
+// === OWNTRACKS ROUTES (без CSRF защита) ===
+Route::post('/owntracks', [App\Http\Controllers\Api\OwnTracksController::class, 'publish'])
+     ->withoutMiddleware('csrf');
 
-// За всеки случай, ако OwnTracks добавя /pub
-Route::post('/owntracks/pub', [App\Http\Controllers\Api\OwnTracksController::class, 'publish']);
+Route::post('/owntracks/pub', [App\Http\Controllers\Api\OwnTracksController::class, 'publish'])
+     ->withoutMiddleware('csrf');
 
+// Тестов маршрут
 Route::post('/owntracks/test', function (Request $request) {
-    \Log::info('TEST OwnTracks received', [
-        'all_headers' => $request->headers->all(),
+    \Log::info('=== TEST OwnTracks received ===', [
+        'ip' => $request->ip(),
+        'headers' => $request->headers->all(),
         'payload' => $request->all()
     ]);
     
     return response()->json([]);
-});
+})->withoutMiddleware('csrf');
