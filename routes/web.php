@@ -21,24 +21,6 @@ Route::get('/current-runner-position', function () {
     ]);
 });
 
-// API за обновяване на позицията
-Route::post('/update-runner-location', function () {
-    $data = request()->validate([
-        'lat' => 'required|numeric',
-        'lng' => 'required|numeric',
-        'distance' => 'required|numeric'
-    ]);
-
-    $run = Run::first();
-    $run->update([
-        'current_lat' => $data['lat'],
-        'current_lng' => $data['lng'],
-        'distance_covered_km' => $data['distance']
-    ]);
-
-    return response()->json(['success' => true]);
-});
-
 // Дарения
 Route::prefix('donations')->name('donations.')->group(function () {
     Route::get('/', [DonationController::class, 'index'])->name('index');

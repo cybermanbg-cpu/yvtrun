@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Изключваме CSRF за OwnTracks маршрута
+        $middleware->validateCsrfTokens(except: [
+            'owntracks/pub',
+        ]);
+        
         $middleware->alias([
             'runner.auth' => \App\Http\Middleware\RunnerPanelAuth::class,
         ]);
