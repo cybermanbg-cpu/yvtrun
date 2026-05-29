@@ -36,7 +36,7 @@ class RunController extends Controller
             'checkpoints', 'totalRaised', 'donorsCount', 'goalAmount', 'percentage',
             'volunteersCount', 'volunteersByRole', 'recentVolunteers',
             'currentLat', 'currentLng', 'currentDistance',
-            'liveVideo', 'pastVideos'  // ДОБАВИ ТОВА
+            'liveVideo', 'pastVideos'
         ));
     }
 }
