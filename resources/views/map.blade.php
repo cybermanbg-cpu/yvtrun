@@ -99,7 +99,7 @@
         </div>
 
         <!-- 📊 Секция за даренията -->
-        <div class="mb-8">
+        {{-- <div class="mb-8">
             <div class="bg-gradient-to-r from-green-500 to-green-700 rounded-xl shadow-lg p-6 text-white">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="text-center md:text-left">
@@ -123,7 +123,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Action Buttons -->
         <!-- Бутони за управление на картата -->
@@ -252,7 +252,7 @@
         </div>
 
         <!-- 🤝 Секция за доброволци -->
-        <div class="mt-8 mb-8">
+        {{-- <div class="mt-8 mb-8">
             <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl shadow-lg p-6 text-white">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="text-center md:text-left">
@@ -268,7 +268,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
 
