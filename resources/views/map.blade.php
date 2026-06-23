@@ -180,7 +180,7 @@
             <h2 class="text-xl font-bold mb-2">📍 Контролни точки</h2>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
                 <span>🏁 Ямбол (0км)</span>
-                <span>📍 Нова Загора (30км)</span>
+                <span>📍 Сливен (30км)</span>
                 <span>📍 Гурково (70км)</span>
                 <span>📍 Елена (90км)</span>
                 <span>📍 Дебелец (120км)</span>
