@@ -181,7 +181,7 @@
             <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
                 <span>🏁 Ямбол (0км)</span>
                 <span>📍 Нова Загора (30км)</span>
-                <span>📍 Твърдица (55км)</span>
+                <span>📍 Гурково (70км)</span>
                 <span>📍 Елена (90км)</span>
                 <span>📍 Дебелец (120км)</span>
                 <span>🏆 В. Търново (133км)</span>
