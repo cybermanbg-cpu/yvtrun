@@ -84,6 +84,72 @@
                 transform: translateY(-12px);
             }
         }
+
+        /* Стилове за таблицата с локации */
+        #locationTableBody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        #locationTableBody tr:hover {
+            background-color: #f3f4f6 !important;
+        }
+
+        #locationTableBody tr.bg-yellow-100 {
+            background-color: #fef3c7 !important;
+        }
+
+        #locationTableBody tr.bg-green-50 {
+            background-color: #f0fdf4 !important;
+        }
+
+        /* Скрол на таблицата */
+        #locationListContainer {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        #locationListContainer table {
+            border-collapse: collapse;
+        }
+
+        #locationListContainer thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: white;
+        }
+
+        /* Анимация за нови записи */
+        @keyframes fadeInRow {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        #locationTableBody tr {
+            animation: fadeInRow 0.3s ease;
+        }
+
+        #locationTableBody tr:nth-child(1) {
+            animation-delay: 0s;
+        }
+        #locationTableBody tr:nth-child(2) {
+            animation-delay: 0.05s;
+        }
+        #locationTableBody tr:nth-child(3) {
+            animation-delay: 0.1s;
+        }
+        #locationTableBody tr:nth-child(4) {
+            animation-delay: 0.15s;
+        }
+        #locationTableBody tr:nth-child(5) {
+            animation-delay: 0.2s;
+        }
     </style>
 </head>
 
@@ -133,10 +199,10 @@
                 🎯 Центрирай върху Антон
             </button>
 
-            <button onclick="clearTrail()"
+            {{-- <button onclick="clearTrail()"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🧹 Изчисти следата
-            </button>
+            </button> --}}
 
             <button onclick="loadFullHistory()"
                 class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition shadow">
@@ -188,6 +254,152 @@
             </div>
         </div>
 
+        <!-- ========== 📋 СПИСЪК С ЛОКАЦИИ ========== -->
+        <div class="bg-white rounded-lg shadow-lg p-4 mb-8">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="text-blue-600">📍</span>
+                    История на локациите
+                    <span class="text-sm font-normal text-gray-500 ml-2">
+                        ({{ $totalLocations ?? 0 }} записа)
+                    </span>
+                </h2>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="toggleLocationList()"
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                        👁️ Скрий/Покажи
+                    </button>
+                    <button onclick="exportLocations()"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                        📥 Експорт
+                    </button>
+                    {{-- <button onclick="refreshLocations()"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                        🔄 Обнови
+                    </button> --}}
+                </div>
+            </div>
+
+            <!-- Статистики -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">Общо точки</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ $totalLocations ?? 0 }}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">Общо км</p>
+                    <p class="text-2xl font-bold text-green-600">133.00 +</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">Последна скорост</p>
+                    <p class="text-2xl font-bold text-purple-600">
+                        4.0
+                        <span class="text-sm font-normal">км/ч</span>
+                    </p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">Последно обновяване</p>
+                    <p class="text-sm font-bold text-gray-700">
+                        {{ isset($lastLocation) ? $lastLocation->recorded_at->format('H:i:s') : '--:--' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Таблица със списък -->
+            <div id="locationListContainer" class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">#</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📍 Координати</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📏 Км</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🏃 Скорост</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🕐 Час</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📱 Батерия</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🎯 Точност</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locationTableBody">
+                        @forelse($locations ?? [] as $index => $location)
+                            <tr class="border-b hover:bg-gray-50 transition {{ $loop->first ? 'bg-blue-50' : '' }}">
+                                <td class="px-4 py-2 text-gray-500">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-2 font-mono text-xs">
+                                    <span class="text-blue-600">{{ number_format($location->lat, 6) }}</span>,
+                                    <span class="text-green-600">{{ number_format($location->lng, 6) }}</span>
+                                    <button onclick="centerOnLocation({{ $location->lat }}, {{ $location->lng }})"
+                                        class="ml-1 text-blue-500 hover:text-blue-700 text-xs" title="Центрирай картата">
+                                        🎯
+                                    </button>
+                                </td>
+                                <td
+                                    class="px-4 py-2 font-bold {{ ($location->distance_km ?? 0) >= 100 ? 'text-red-600' : (($location->distance_km ?? 0) >= 50 ? 'text-orange-500' : 'text-gray-700') }}">
+                                    {{ number_format($location->distance_km ?? 0, 1) }}
+                                </td>
+                                <td class="px-4 py-2">
+                                    {{ isset($location->speed) ? number_format($location->speed, 1) : '--' }}
+                                    <span class="text-xs text-gray-400">км/ч</span>
+                                </td>
+                                <td class="px-4 py-2 text-gray-600">
+                                    {{ $location->recorded_at->format('H:i:s') }}
+                                    <span
+                                        class="text-xs text-gray-400">{{ $location->recorded_at->format('d.m') }}</span>
+                                </td>
+                                <td class="px-4 py-2">
+                                    @if (isset($location->battery))
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-sm">{{ number_format($location->battery, 0) }}%</span>
+                                            <div class="w-8 h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-500 rounded-full"
+                                                    style="width: {{ $location->battery }}%"></div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">--</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 text-gray-500">
+                                    @if (isset($location->accuracy))
+                                        {{ $location->accuracy }}м
+                                    @else
+                                        --
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                                    📭 Няма записани локации все още
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <!-- Пагинация -->
+                @if (isset($locations) && $locations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                    <div class="mt-4">
+                        {{ $locations->links() }}
+                    </div>
+                @endif
+            </div>
+
+            <!-- Бутон за превъртане до най-новата локация -->
+            <div class="mt-3 flex gap-2 flex-wrap">
+                <button onclick="scrollToLatest()"
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                    ⬇️ Към най-новата
+                </button>
+                <button onclick="scrollToTop()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                    ⬆️ Най-горе
+                </button>
+                <button onclick="centerOnLastLocation()"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                    🎯 Последна локация
+                </button>
+            </div>
+        </div>
+
         <!-- 🎥 YouTube Видеа секция -->
         <div class="mb-8">
             <div class="bg-white rounded-lg shadow-lg p-6">
@@ -196,7 +408,7 @@
                     Видео от бягането
                 </h2>
 
-                @if ($liveVideo)
+                @if (isset($liveVideo) && $liveVideo)
                     <div class="mb-8">
                         <div class="relative">
                             <div
@@ -221,7 +433,7 @@
                     </div>
                 @endif
 
-                @if ($pastVideos->count() > 0)
+                @if (isset($pastVideos) && $pastVideos->count() > 0)
                     <div>
                         <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
                             <span class="text-gray-600">📼</span>
@@ -271,7 +483,6 @@
         </div> --}}
     </div>
 
-
     <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
 
     <script>
@@ -311,7 +522,7 @@
             map.addControl(new maplibregl.ScaleControl());
 
             map.on('load', () => {
-                const checkpoints = @json($checkpoints);
+                const checkpoints = @json($checkpoints ?? []);
                 const routePoints = [];
 
                 checkpoints.forEach(cp => {
@@ -332,28 +543,30 @@
                 });
 
                 // Официален маршрут
-                map.addSource('route', {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'LineString',
-                            coordinates: routePoints
+                if (routePoints.length > 0) {
+                    map.addSource('route', {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: routePoints
+                            }
                         }
-                    }
-                });
+                    });
 
-                map.addLayer({
-                    id: 'route',
-                    type: 'line',
-                    source: 'route',
-                    paint: {
-                        'line-color': '#2980b9',
-                        'line-width': 5,
-                        'line-opacity': 0.8,
-                        'line-dasharray': [8, 6]
-                    }
-                });
+                    map.addLayer({
+                        id: 'route',
+                        type: 'line',
+                        source: 'route',
+                        paint: {
+                            'line-color': '#2980b9',
+                            'line-width': 5,
+                            'line-opacity': 0.8,
+                            'line-dasharray': [8, 6]
+                        }
+                    });
+                }
 
                 startTracking();
             });
@@ -599,7 +812,155 @@
             alert('Историческата линия е изчистена от картата.');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // ==================== ФУНКЦИИ ЗА СПИСЪКА ====================
+
+        // Скриване/показване на списъка
+        function toggleLocationList() {
+            const container = document.getElementById('locationListContainer');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        // Центриране на картата върху конкретна локация
+        function centerOnLocation(lat, lng) {
+            if (map) {
+                map.flyTo({
+                    center: [lng, lat],
+                    zoom: 16,
+                    duration: 1000
+                });
+
+                // Маркираме реда в таблицата
+                document.querySelectorAll('#locationTableBody tr').forEach(row => {
+                    row.classList.remove('bg-yellow-100');
+                });
+
+                // Намираме реда с тази локация (сравнение с плаваща запетая)
+                const rows = document.querySelectorAll('#locationTableBody tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 2) {
+                        const coordText = cells[1].textContent.trim();
+                        const match = coordText.match(/([\d.]+),\s*([\d.]+)/);
+                        if (match) {
+                            const rowLat = parseFloat(match[1]);
+                            const rowLng = parseFloat(match[2]);
+                            if (Math.abs(rowLat - lat) < 0.0001 && Math.abs(rowLng - lng) < 0.0001) {
+                                row.classList.add('bg-yellow-100');
+                                row.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Центриране върху последната локация от списъка
+        function centerOnLastLocation() {
+            const rows = document.querySelectorAll('#locationTableBody tr');
+            if (rows.length > 0) {
+                const cells = rows[0].querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const coordText = cells[1].textContent.trim();
+                    const match = coordText.match(/([\d.]+),\s*([\d.]+)/);
+                    if (match) {
+                        const lat = parseFloat(match[1]);
+                        const lng = parseFloat(match[2]);
+                        centerOnLocation(lat, lng);
+                    }
+                }
+            }
+        }
+
+        // Превъртане до най-новата локация
+        function scrollToLatest() {
+            const container = document.getElementById('locationListContainer');
+            if (container) {
+                const rows = container.querySelectorAll('tbody tr');
+                if (rows.length > 0) {
+                    rows[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                    rows[0].classList.add('bg-green-50');
+                    setTimeout(() => {
+                        rows[0].classList.remove('bg-green-50');
+                    }, 2000);
+                }
+            }
+        }
+
+        // Превъртане до началото
+        function scrollToTop() {
+            const container = document.getElementById('locationListContainer');
+            if (container) {
+                container.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Обновяване на списъка
+        function refreshLocations() {
+            location.reload();
+        }
+
+        // Експорт на локациите в CSV
+        function exportLocations() {
+            const rows = document.querySelectorAll('#locationTableBody tr');
+            if (rows.length === 0) {
+                alert('Няма данни за експорт.');
+                return;
+            }
+
+            let csv = '#'; // Заглавия
+            csv += 'Lat,Lng,Distance (km),Speed (km/h),Recorded At,Battery (%),Accuracy (m)\n';
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 7) {
+                    const coords = cells[1].textContent.trim().replace(/\s+/g, ' ').split(' ');
+                    const lat = coords[0] || '';
+                    const lng = coords[2] || '';
+                    const distance = cells[2].textContent.trim();
+                    const speed = cells[3].textContent.trim().replace('км/ч', '').trim();
+                    const time = cells[4].textContent.trim();
+                    const battery = cells[5].textContent.trim().replace('%', '').trim();
+                    const accuracy = cells[6].textContent.trim().replace('м', '').trim();
+
+                    csv += `${lat},${lng},${distance},${speed},${time},${battery},${accuracy}\n`;
+                }
+            });
+
+            // Създаване и изтегляне на CSV файл
+            const blob = new Blob([csv], {
+                type: 'text/csv;charset=utf-8;'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `locations_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Маркираме първия ред (най-нов) със специален клас
+            const firstRow = document.querySelector('#locationTableBody tr');
+            if (firstRow) {
+                firstRow.classList.add('border-l-4', 'border-blue-500');
+            }
+            
+            // Стартиране на картата
             setTimeout(initMap, 300);
         });
     </script>
