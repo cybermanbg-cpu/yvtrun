@@ -6,8 +6,7 @@ use App\Models\Run;
 use App\Models\Checkpoint;
 use App\Models\Donation;
 use App\Models\Volunteer;
-use App\Models\YouTubeVideo;
-use App\Models\LocationHistory;
+use App\Models\YouTubeVideo; // ДОБАВИ ТОВА
 
 class RunController extends Controller
 {
@@ -29,27 +28,15 @@ class RunController extends Controller
         $currentLng = $run->current_lng ?? 26.5000;
         $currentDistance = $run->distance_covered_km ?? 0;
         
+        // Вземи видеата
         $liveVideo = YouTubeVideo::where('is_live', true)->where('is_active', true)->first();
         $pastVideos = YouTubeVideo::where('is_live', false)->where('is_active', true)->orderBy('created_at', 'desc')->get();
-        
-        // ========== ВЗЕМАНЕ НА ВСИЧКИ ЛОКАЦИИ ЗА СПИСЪК ==========
-        // $locations = LocationHistory::orderBy('recorded_at', 'desc')
-            // ->paginate(50); // Използвайте paginate за големи данни
-        
-        // Или ако искате всички (за малко данни):
-        $locations = LocationHistory::orderBy('recorded_at', 'desc')->get();
-        
-        // Статистики
-        $totalLocations = LocationHistory::count();
-        $lastLocation = LocationHistory::latest('recorded_at')->first();
-        $totalDistance = LocationHistory::getTotalDistanceFromHistory();
         
         return view('map', compact(
             'checkpoints', 'totalRaised', 'donorsCount', 'goalAmount', 'percentage',
             'volunteersCount', 'volunteersByRole', 'recentVolunteers',
             'currentLat', 'currentLng', 'currentDistance',
-            'liveVideo', 'pastVideos',
-            'locations', 'totalLocations', 'lastLocation', 'totalDistance' // НОВИ ПРОМЕНЛИВИ
+            'liveVideo', 'pastVideos'
         ));
     }
 }

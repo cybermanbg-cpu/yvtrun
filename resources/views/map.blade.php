@@ -85,70 +85,46 @@
             }
         }
 
-        /* Стилове за таблицата с локации */
-        #locationTableBody tr {
-            transition: background-color 0.3s ease;
+        #timeline-controls {
+            transition: all 0.3s ease;
+            border: 2px solid #8e44ad;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         }
 
-        #locationTableBody tr:hover {
-            background-color: #f3f4f6 !important;
+        #timelineSlider {
+            accent-color: #8e44ad;
         }
 
-        #locationTableBody tr.bg-yellow-100 {
-            background-color: #fef3c7 !important;
+        #timelineSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8e44ad;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
-        #locationTableBody tr.bg-green-50 {
-            background-color: #f0fdf4 !important;
+        .speed-btn {
+            min-width: 40px;
+            font-weight: bold;
+            transition: all 0.2s ease;
         }
 
-        /* Скрол на таблицата */
-        #locationListContainer {
-            max-height: 600px;
-            overflow-y: auto;
+        .speed-btn.bg-blue-500 {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
-
-        #locationListContainer table {
-            border-collapse: collapse;
+        
+        .date-btn {
+            transition: all 0.2s ease;
         }
-
-        #locationListContainer thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: white;
-        }
-
-        /* Анимация за нови записи */
-        @keyframes fadeInRow {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        #locationTableBody tr {
-            animation: fadeInRow 0.3s ease;
-        }
-
-        #locationTableBody tr:nth-child(1) {
-            animation-delay: 0s;
-        }
-        #locationTableBody tr:nth-child(2) {
-            animation-delay: 0.05s;
-        }
-        #locationTableBody tr:nth-child(3) {
-            animation-delay: 0.1s;
-        }
-        #locationTableBody tr:nth-child(4) {
-            animation-delay: 0.15s;
-        }
-        #locationTableBody tr:nth-child(5) {
-            animation-delay: 0.2s;
+        
+        .date-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
     </style>
 </head>
@@ -164,59 +140,54 @@
             </div>
         </div>
 
-        <!-- 📊 Секция за даренията -->
-        {{-- <div class="mb-8">
-            <div class="bg-gradient-to-r from-green-500 to-green-700 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="text-center md:text-left">
-                        <p class="text-sm uppercase tracking-wide opacity-90">Събрани средства</p>
-                        <p class="text-4xl font-bold">{{ number_format($totalRaised, 0) }} €</p>
-                        <p class="text-sm opacity-90">от цел {{ number_format($goalAmount, 0) }} €</p>
-                    </div>
-
-                    <div class="flex-1 w-full max-w-md">
-                        <div class="w-full bg-white/30 rounded-full h-4 overflow-hidden">
-                            <div class="bg-yellow-400 h-4 rounded-full transition-all duration-500"
-                                style="width: {{ min($percentage, 100) }}%"></div>
-                        </div>
-                        <p class="text-sm text-center mt-2">{{ number_format($percentage, 1) }}% от целта</p>
-                    </div>
-
-                    <div class="text-center md:text-right">
-                        <p class="text-sm uppercase tracking-wide opacity-90">Дарители</p>
-                        <p class="text-3xl font-bold">{{ $donorsCount }}</p>
-                        <p class="text-sm opacity-90">❤️ благодетели</p>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
-
         <!-- Action Buttons -->
-        <!-- Бутони за управление на картата -->
         <div class="flex flex-wrap gap-2 mb-4">
             <button onclick="centerOnRunner()"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🎯 Центрирай върху Антон
             </button>
 
-            {{-- <button onclick="clearTrail()"
+            <button onclick="clearTrail()"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🧹 Изчисти следата
-            </button> --}}
+            </button>
 
             <button onclick="loadFullHistory()"
                 class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition shadow">
                 📜 Зареди пълна история
             </button>
 
-            <button onclick="clearHistory()"
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
-                🗑️ Изчисти историята
-            </button>
-
             <button onclick="resetMapView()"
                 class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition shadow">
                 🗺️ Цялата карта
+            </button>
+        </div>
+
+        <!-- Таймлайн бутони за дати -->
+        <div class="flex flex-wrap gap-2 mb-4">
+            <button onclick="loadTimelineHistory('2026-06-23')" 
+                class="date-btn bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition shadow">
+                📅 23 юни 2026
+            </button>
+            
+            <button onclick="loadTimelineHistory('2026-06-24')" 
+                class="date-btn bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition shadow">
+                📅 24 юни 2026
+            </button>
+            
+            <button onclick="loadTimelineHistory()" 
+                class="date-btn bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition shadow">
+                📅 Цялото бягане (23-24 юни)
+            </button>
+            
+            <button onclick="loadTimelineHistory('today')" 
+                class="date-btn bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg transition shadow">
+                📅 Днес
+            </button>
+            
+            <button onclick="closeTimeline()" 
+                class="date-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow">
+                ❌ Затвори таймлайн
             </button>
         </div>
 
@@ -254,152 +225,6 @@
             </div>
         </div>
 
-        <!-- ========== 📋 СПИСЪК С ЛОКАЦИИ ========== -->
-        <div class="bg-white rounded-lg shadow-lg p-4 mb-8">
-            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                <h2 class="text-2xl font-bold flex items-center gap-2">
-                    <span class="text-blue-600">📍</span>
-                    История на локациите
-                    <span class="text-sm font-normal text-gray-500 ml-2">
-                        ({{ $totalLocations ?? 0 }} записа)
-                    </span>
-                </h2>
-                <div class="flex gap-2 flex-wrap">
-                    <button onclick="toggleLocationList()"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                        👁️ Скрий/Покажи
-                    </button>
-                    <button onclick="exportLocations()"
-                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                        📥 Експорт
-                    </button>
-                    {{-- <button onclick="refreshLocations()"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                        🔄 Обнови
-                    </button> --}}
-                </div>
-            </div>
-
-            <!-- Статистики -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <div class="bg-gray-50 rounded-lg p-3 text-center">
-                    <p class="text-xs text-gray-500">Общо точки</p>
-                    <p class="text-2xl font-bold text-blue-600">{{ $totalLocations ?? 0 }}</p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-3 text-center">
-                    <p class="text-xs text-gray-500">Общо км</p>
-                    <p class="text-2xl font-bold text-green-600">133.00 +</p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-3 text-center">
-                    <p class="text-xs text-gray-500">Последна скорост</p>
-                    <p class="text-2xl font-bold text-purple-600">
-                        4.0
-                        <span class="text-sm font-normal">км/ч</span>
-                    </p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-3 text-center">
-                    <p class="text-xs text-gray-500">Последно обновяване</p>
-                    <p class="text-sm font-bold text-gray-700">
-                        {{ isset($lastLocation) ? $lastLocation->recorded_at->format('H:i:s') : '--:--' }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Таблица със списък -->
-            <div id="locationListContainer" class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">#</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📍 Координати</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📏 Км</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🏃 Скорост</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🕐 Час</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">📱 Батерия</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">🎯 Точност</th>
-                        </tr>
-                    </thead>
-                    <tbody id="locationTableBody">
-                        @forelse($locations ?? [] as $index => $location)
-                            <tr class="border-b hover:bg-gray-50 transition {{ $loop->first ? 'bg-blue-50' : '' }}">
-                                <td class="px-4 py-2 text-gray-500">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-2 font-mono text-xs">
-                                    <span class="text-blue-600">{{ number_format($location->lat, 6) }}</span>,
-                                    <span class="text-green-600">{{ number_format($location->lng, 6) }}</span>
-                                    <button onclick="centerOnLocation({{ $location->lat }}, {{ $location->lng }})"
-                                        class="ml-1 text-blue-500 hover:text-blue-700 text-xs" title="Центрирай картата">
-                                        🎯
-                                    </button>
-                                </td>
-                                <td
-                                    class="px-4 py-2 font-bold {{ ($location->distance_km ?? 0) >= 100 ? 'text-red-600' : (($location->distance_km ?? 0) >= 50 ? 'text-orange-500' : 'text-gray-700') }}">
-                                    {{ number_format($location->distance_km ?? 0, 1) }}
-                                </td>
-                                <td class="px-4 py-2">
-                                    {{ isset($location->speed) ? number_format($location->speed, 1) : '--' }}
-                                    <span class="text-xs text-gray-400">км/ч</span>
-                                </td>
-                                <td class="px-4 py-2 text-gray-600">
-                                    {{ $location->recorded_at->format('H:i:s') }}
-                                    <span
-                                        class="text-xs text-gray-400">{{ $location->recorded_at->format('d.m') }}</span>
-                                </td>
-                                <td class="px-4 py-2">
-                                    @if (isset($location->battery))
-                                        <div class="flex items-center gap-1">
-                                            <span class="text-sm">{{ number_format($location->battery, 0) }}%</span>
-                                            <div class="w-8 h-3 bg-gray-200 rounded-full overflow-hidden">
-                                                <div class="h-full bg-green-500 rounded-full"
-                                                    style="width: {{ $location->battery }}%"></div>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <span class="text-gray-400">--</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2 text-gray-500">
-                                    @if (isset($location->accuracy))
-                                        {{ $location->accuracy }}м
-                                    @else
-                                        --
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-gray-400">
-                                    📭 Няма записани локации все още
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-
-                <!-- Пагинация -->
-                @if (isset($locations) && $locations instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    <div class="mt-4">
-                        {{ $locations->links() }}
-                    </div>
-                @endif
-            </div>
-
-            <!-- Бутон за превъртане до най-новата локация -->
-            <div class="mt-3 flex gap-2 flex-wrap">
-                <button onclick="scrollToLatest()"
-                    class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                    ⬇️ Към най-новата
-                </button>
-                <button onclick="scrollToTop()"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                    ⬆️ Най-горе
-                </button>
-                <button onclick="centerOnLastLocation()"
-                    class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition text-sm">
-                    🎯 Последна локация
-                </button>
-            </div>
-        </div>
-
         <!-- 🎥 YouTube Видеа секция -->
         <div class="mb-8">
             <div class="bg-white rounded-lg shadow-lg p-6">
@@ -408,7 +233,7 @@
                     Видео от бягането
                 </h2>
 
-                @if (isset($liveVideo) && $liveVideo)
+                @if ($liveVideo)
                     <div class="mb-8">
                         <div class="relative">
                             <div
@@ -433,7 +258,7 @@
                     </div>
                 @endif
 
-                @if (isset($pastVideos) && $pastVideos->count() > 0)
+                @if ($pastVideos->count() > 0)
                     <div>
                         <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
                             <span class="text-gray-600">📼</span>
@@ -462,25 +287,6 @@
                 @endif
             </div>
         </div>
-
-        <!-- 🤝 Секция за доброволци -->
-        {{-- <div class="mt-8 mb-8">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="text-center md:text-left">
-                        <p class="text-sm uppercase tracking-wide opacity-90">Нашият екип</p>
-                        <p class="text-4xl font-bold">{{ $volunteersCount }}</p>
-                        <p class="text-sm opacity-90">🤝 записани доброволци</p>
-                    </div>
-                    <div>
-                        <a href="{{ route('volunteers.index') }}"
-                            class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-2 px-6 rounded-full transition">
-                            🤝 Стани доброволец
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
@@ -490,6 +296,9 @@
         let runnerMarker = null;
         let trailPoints = [];
         let historyLine = null;
+        let isTimelineMode = false;
+        let trackingInterval = null;
+        let isTrackingPaused = false;
 
         function initMap() {
             document.getElementById('map-loading').style.display = 'none';
@@ -522,7 +331,7 @@
             map.addControl(new maplibregl.ScaleControl());
 
             map.on('load', () => {
-                const checkpoints = @json($checkpoints ?? []);
+                const checkpoints = @json($checkpoints);
                 const routePoints = [];
 
                 checkpoints.forEach(cp => {
@@ -543,36 +352,38 @@
                 });
 
                 // Официален маршрут
-                if (routePoints.length > 0) {
-                    map.addSource('route', {
-                        type: 'geojson',
-                        data: {
-                            type: 'Feature',
-                            geometry: {
-                                type: 'LineString',
-                                coordinates: routePoints
-                            }
+                map.addSource('route', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: routePoints
                         }
-                    });
+                    }
+                });
 
-                    map.addLayer({
-                        id: 'route',
-                        type: 'line',
-                        source: 'route',
-                        paint: {
-                            'line-color': '#2980b9',
-                            'line-width': 5,
-                            'line-opacity': 0.8,
-                            'line-dasharray': [8, 6]
-                        }
-                    });
-                }
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: 'route',
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#2980b9',
+                        'line-width': 5,
+                        'line-opacity': 0.8,
+                        'line-dasharray': [8, 6]
+                    }
+                });
 
                 startTracking();
             });
         }
 
-        function updateRunnerPosition(lat, lng, distance) {
+        function updateRunnerPosition(lat, lng, distance, fromTimeline = false) {
             if (!map) return;
 
             document.getElementById('coordDisplay').innerHTML =
@@ -580,48 +391,60 @@
             document.getElementById('distanceDisplay').innerHTML = distance.toFixed(1) + ' / 133 км';
             document.getElementById('progressBar').style.width = Math.min((distance / 133 * 100), 100) + '%';
 
-            // Добавяне на точка към текущата следа
-            const newPoint = [lat, lng];
-            if (trailPoints.length === 0 ||
-                Math.hypot(trailPoints[trailPoints.length - 1][0] - lat, trailPoints[trailPoints.length - 1][1] - lng) >
-                0.00008) {
-                trailPoints.push(newPoint);
-            }
+            // Ако сме в таймлайн режим, не добавяме точки към следата
+            if (!fromTimeline) {
+                // Добавяне на точка към текущата следа (само за реално проследяване)
+                const newPoint = [lat, lng];
+                if (trailPoints.length === 0 ||
+                    Math.hypot(trailPoints[trailPoints.length - 1][0] - lat, trailPoints[trailPoints.length - 1][1] - lng) >
+                    0.00008) {
+                    trailPoints.push(newPoint);
+                }
 
-            const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
+                const trailCoordinates = trailPoints.map(p => [p[1], p[0]]);
 
-            if (map.getSource('trail')) {
-                map.getSource('trail').setData({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: trailCoordinates
+                // Обновяваме следата
+                if (map.getLayer('trail')) {
+                    if (map.getSource('trail')) {
+                        map.getSource('trail').setData({
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: trailCoordinates
+                            }
+                        });
                     }
-                });
-            } else {
-                map.addSource('trail', {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'LineString',
-                            coordinates: trailCoordinates
+                } else {
+                    if (map.getSource('trail')) {
+                        map.removeSource('trail');
+                    }
+                    
+                    map.addSource('trail', {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: trailCoordinates
+                            }
                         }
-                    }
-                });
+                    });
 
-                map.addLayer({
-                    id: 'trail',
-                    type: 'line',
-                    source: 'trail',
-                    paint: {
-                        'line-color': '#e74c3c',
-                        'line-width': 6,
-                        'line-opacity': 0.85,
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    }
-                });
+                    map.addLayer({
+                        id: 'trail',
+                        type: 'line',
+                        source: 'trail',
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        paint: {
+                            'line-color': '#e74c3c',
+                            'line-width': 6,
+                            'line-opacity': 0.85
+                        }
+                    });
+                }
             }
 
             // Текущ пин на бегача
@@ -629,12 +452,12 @@
 
             const pinDiv = document.createElement('div');
             pinDiv.innerHTML = `
-            <div style="background:#e74c3c; color:white; width:36px; height:36px; border-radius:50% 50% 50% 0;
-                        display:flex; align-items:center; justify-content:center; font-size:19px;
-                        box-shadow:0 5px 12px rgba(231,76,60,0.6); transform:rotate(-45deg); border:3px solid white;">
-                <span style="transform:rotate(45deg);">🏃</span>
-            </div>
-        `;
+                <div style="background:#e74c3c; color:white; width:36px; height:36px; border-radius:50% 50% 50% 0;
+                            display:flex; align-items:center; justify-content:center; font-size:19px;
+                            box-shadow:0 5px 12px rgba(231,76,60,0.6); transform:rotate(-45deg); border:3px solid white;">
+                    <span style="transform:rotate(45deg);">🏃</span>
+                </div>
+            `;
 
             runnerMarker = new maplibregl.Marker({
                     element: pinDiv,
@@ -647,12 +470,12 @@
                         closeButton: false
                     })
                     .setHTML(`
-                <div style="text-align:center; min-width:170px;">
-                    <b style="color:#e74c3c;">🏃‍♂️ Антон Е ТУК</b><br>
-                    📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
-                    📏 ${distance.toFixed(1)} км
-                </div>
-            `))
+                        <div style="text-align:center; min-width:170px;">
+                            <b style="color:#e74c3c;">🏃‍♂️ Антон Е ТУК</b><br>
+                            📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                            📏 ${distance.toFixed(1)} км
+                        </div>
+                    `))
                 .addTo(map);
         }
 
@@ -681,12 +504,23 @@
             fetch('/current-runner-position')
                 .then(res => res.json())
                 .then(data => {
-                    updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
+                    if (!isTimelineMode) {
+                        updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
+                    }
                 })
                 .catch(err => console.error(err));
 
-            // Обновяване на всеки 2 секунди
-            setInterval(() => {
+            // Обновяване на всеки 2 секунди - само ако не сме в таймлайн режим
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+            }
+            
+            trackingInterval = setInterval(() => {
+                // Проверяваме дали сме в таймлайн режим
+                if (isTimelineMode) {
+                    return; // Пропускаме обновяването
+                }
+                
                 fetch('/current-runner-position')
                     .then(res => res.json())
                     .then(data => {
@@ -759,38 +593,39 @@
 
                 const coords = data.history.map(p => [p.lng, p.lat]);
 
+                if (map.getLayer('history-line')) {
+                    map.removeLayer('history-line');
+                }
                 if (map.getSource('history-line')) {
-                    map.getSource('history-line').setData({
+                    map.removeSource('history-line');
+                }
+
+                map.addSource('history-line', {
+                    type: 'geojson',
+                    data: {
                         type: 'Feature',
                         geometry: {
                             type: 'LineString',
                             coordinates: coords
                         }
-                    });
-                } else {
-                    map.addSource('history-line', {
-                        type: 'geojson',
-                        data: {
-                            type: 'Feature',
-                            geometry: {
-                                type: 'LineString',
-                                coordinates: coords
-                            }
-                        }
-                    });
+                    }
+                });
 
-                    map.addLayer({
-                        id: 'history-line',
-                        type: 'line',
-                        source: 'history-line',
-                        paint: {
-                            'line-color': '#8e44ad',
-                            'line-width': 4.5,
-                            'line-opacity': 0.75,
-                            'line-dasharray': [1, 2]
-                        }
-                    });
-                }
+                map.addLayer({
+                    id: 'history-line',
+                    type: 'line',
+                    source: 'history-line',
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#8e44ad',
+                        'line-width': 4.5,
+                        'line-opacity': 0.75,
+                        'line-dasharray': [1, 2]
+                    }
+                });
 
                 alert(`Заредена пълна история с ${data.history.length} точки (лилава пунктирана линия)`);
             } catch (e) {
@@ -812,156 +647,390 @@
             alert('Историческата линия е изчистена от картата.');
         }
 
-        // ==================== ФУНКЦИИ ЗА СПИСЪКА ====================
+        // ==================== ТАЙМЛАЙН ФУНКЦИОНАЛНОСТ ====================
 
-        // Скриване/показване на списъка
-        function toggleLocationList() {
-            const container = document.getElementById('locationListContainer');
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
+        let timelineControls = null;
+        let timelineSlider = null;
+        let currentTimelineIndex = 0;
+        let isPlayingTimeline = false;
+        let timelinePlayInterval = null;
+        let timelineData = [];
+        let timelineUpdateInterval = null;
+
+        function createTimelineControls() {
+            // Създаване на контроли за таймлайн
+            const timelineContainer = document.createElement('div');
+            timelineContainer.id = 'timeline-controls';
+            timelineContainer.className = 'mt-4 p-4 bg-gray-100 rounded-lg';
+            timelineContainer.style.display = 'none';
+
+            timelineContainer.innerHTML = `
+                <div class="flex items-center gap-4 flex-wrap">
+                    <button onclick="toggleTimelinePlay()" id="playBtn" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow">
+                        ▶️ Възпроизвеждане
+                    </button>
+                    
+                    <button onclick="resetTimeline()" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow">
+                        🔄 Нулирай
+                    </button>
+                    
+                    <button onclick="showFullTimeline()" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition shadow">
+                        📊 Покажи целия маршрут
+                    </button>
+                    
+                    <div class="flex-1 min-w-[200px]">
+                        <input type="range" id="timelineSlider" 
+                            min="0" max="100" value="0" step="1"
+                            class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs mt-1">
+                            <span id="timelineTime">00:00:00</span>
+                            <span id="timelineProgress">0%</span>
+                            <span id="timelineDistance">0.0 км</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="setTimelineSpeed(1)" class="speed-btn bg-blue-500 text-white px-3 py-1 rounded text-sm" data-speed="1">1x</button>
+                        <button onclick="setTimelineSpeed(2)" class="speed-btn bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm" data-speed="2">2x</button>
+                        <button onclick="setTimelineSpeed(5)" class="speed-btn bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm" data-speed="5">5x</button>
+                        <button onclick="setTimelineSpeed(10)" class="speed-btn bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm" data-speed="10">10x</button>
+                    </div>
+                </div>
+                <div id="timelineInfo" class="mt-2 text-sm text-gray-600"></div>
+            `;
+
+            const mapContainer = document.getElementById('map');
+            mapContainer.parentNode.insertBefore(timelineContainer, mapContainer.nextSibling);
+
+            timelineSlider = document.getElementById('timelineSlider');
+
+            timelineSlider.addEventListener('input', function() {
+                if (timelineData && timelineData.length > 0) {
+                    const index = Math.floor((this.value / 100) * (timelineData.length - 1));
+                    showTimelinePoint(index);
+                }
+            });
+
+            return timelineContainer;
+        }
+
+        async function loadTimelineHistory(date = null) {
+            try {
+                // Спираме реалното проследяване
+                isTimelineMode = true;
+                
+                let url = '/location-history';
+                if (date === 'today') {
+                    url = '/location-history/today';
+                } else if (date) {
+                    url += '/' + date;
+                }
+
+                console.log('Зареждане на таймлайн от:', url);
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data.history || data.history.length < 2) {
+                    alert('Няма достатъчно исторически данни за таймлайн. (Нужни са поне 2 точки)');
+                    isTimelineMode = false;
+                    return;
+                }
+
+                console.log(`Заредени ${data.history.length} точки за таймлайн`);
+                timelineData = data.history;
+
+                if (!timelineControls) {
+                    timelineControls = createTimelineControls();
+                }
+
+                timelineControls.style.display = 'block';
+
+                // Показваме целия маршрут на картата
+                showFullTimeline();
+
+                // Настройваме слайдера
+                if (timelineSlider) {
+                    timelineSlider.max = timelineData.length - 1;
+                    timelineSlider.value = 0;
+                }
+
+                // Показваме първата точка
+                showTimelinePoint(0);
+
+                // Информация за таймлайна
+                const totalDist = data.total_distance || 0;
+                const infoEl = document.getElementById('timelineInfo');
+                if (infoEl) {
+                    const dateRange = timelineData.length > 0 ? 
+                        `от: ${timelineData[0].recorded_at} до: ${timelineData[timelineData.length-1].recorded_at}` : '';
+                    infoEl.innerHTML = `
+                        📊 ${timelineData.length} точки | 
+                        📏 Общо разстояние: ${totalDist.toFixed(2)} км | 
+                        🕐 ${dateRange}
+                    `;
+                }
+
+                document.getElementById('timelineProgress').textContent = '0%';
+                debugTimelineData();
+
+                // Актуализираме активния бутон
+                document.querySelectorAll('.date-btn').forEach(btn => {
+                    btn.classList.remove('active', 'ring-2', 'ring-offset-2', 'ring-emerald-500');
+                });
+                
+                // Маркираме кой бутон е активен
+                const btnText = date === 'today' ? 'Днес' : 
+                               date === '2026-06-23' ? '23 юни 2026' :
+                               date === '2026-06-24' ? '24 юни 2026' : 
+                               'Цялото бягане';
+                
+                document.querySelectorAll('.date-btn').forEach(btn => {
+                    if (btn.textContent.trim().includes(btnText) || 
+                        (date === null && btn.textContent.includes('Цялото'))) {
+                        btn.classList.add('active', 'ring-2', 'ring-offset-2', 'ring-emerald-500');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Грешка при зареждане на таймлайн:', error);
+                alert('Грешка при зареждане на историята за таймлайн: ' + error.message);
+                isTimelineMode = false;
             }
         }
 
-        // Центриране на картата върху конкретна локация
-        function centerOnLocation(lat, lng) {
-            if (map) {
-                map.flyTo({
-                    center: [lng, lat],
-                    zoom: 16,
+        function showTimelinePoint(index) {
+            if (!timelineData || index < 0 || index >= timelineData.length) return;
+
+            const point = timelineData[index];
+            currentTimelineIndex = index;
+
+            // Актуализираме позицията на бегача с fromTimeline = true
+            updateRunnerPosition(point.lat, point.lng, point.distance_km, true);
+
+            // Актуализираме информацията
+            const progress = ((index + 1) / timelineData.length * 100);
+            document.getElementById('timelineProgress').textContent = progress.toFixed(1) + '%';
+            document.getElementById('timelineTime').textContent = point.time || '--:--:--';
+            document.getElementById('timelineDistance').textContent = point.distance_km.toFixed(1) + ' км';
+
+            // Актуализираме слайдера без да предизвикваме събитие
+            if (timelineSlider) {
+                timelineSlider.value = index;
+            }
+
+            // Добавяме информация за скоростта, ако е налична
+            if (point.speed) {
+                document.getElementById('timelineInfo').innerHTML = `
+                    ⏱️ Точка ${index + 1} от ${timelineData.length} | 
+                    🏃 Скорост: ${point.speed.toFixed(1)} км/ч | 
+                    📏 Разстояние: ${point.distance_km.toFixed(1)} км
+                `;
+            }
+        }
+
+        function toggleTimelinePlay() {
+            const playBtn = document.getElementById('playBtn');
+            if (!playBtn) return;
+
+            if (isPlayingTimeline) {
+                // Спираме
+                clearInterval(timelinePlayInterval);
+                isPlayingTimeline = false;
+                playBtn.innerHTML = '▶️ Възпроизвеждане';
+                playBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow';
+            } else {
+                if (!timelineData || timelineData.length < 2) {
+                    alert('Няма заредени данни за таймлайн. Заредете история първо.');
+                    return;
+                }
+                
+                // Започваме
+                isPlayingTimeline = true;
+                playBtn.innerHTML = '⏸️ Пауза';
+                playBtn.className = 'bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition shadow';
+
+                let speed = parseInt(document.querySelector('.speed-btn.bg-blue-500')?.dataset.speed || 1);
+
+                timelinePlayInterval = setInterval(() => {
+                    if (currentTimelineIndex < timelineData.length - 1) {
+                        showTimelinePoint(currentTimelineIndex + 1);
+                    } else {
+                        // Стигнахме края
+                        clearInterval(timelinePlayInterval);
+                        isPlayingTimeline = false;
+                        playBtn.innerHTML = '▶️ Възпроизвеждане';
+                        playBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow';
+                        alert('🎉 Таймлайнът завърши!');
+                    }
+                }, 1500 / speed);
+            }
+        }
+
+        function resetTimeline() {
+            if (isPlayingTimeline) {
+                clearInterval(timelinePlayInterval);
+                isPlayingTimeline = false;
+                const playBtn = document.getElementById('playBtn');
+                if (playBtn) {
+                    playBtn.innerHTML = '▶️ Възпроизвеждане';
+                    playBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow';
+                }
+            }
+
+            if (timelineData && timelineData.length > 0) {
+                showTimelinePoint(0);
+            }
+        }
+
+        function showFullTimeline() {
+            if (!timelineData || timelineData.length < 2) return;
+
+            const coords = timelineData.map(p => [p.lng, p.lat]);
+
+            // Премахваме стария слой ако съществува
+            if (map.getLayer('timeline-route')) {
+                map.removeLayer('timeline-route');
+            }
+            if (map.getSource('timeline-route')) {
+                map.removeSource('timeline-route');
+            }
+
+            // Добавяме пълния маршрут като линия
+            map.addSource('timeline-route', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: coords
+                    }
+                }
+            });
+
+            map.addLayer({
+                id: 'timeline-route',
+                type: 'line',
+                source: 'timeline-route',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#8e44ad',
+                    'line-width': 3,
+                    'line-opacity': 0.6,
+                    'line-dasharray': [1, 2]
+                }
+            });
+
+            // Центрираме картата върху целия маршрут
+            try {
+                const bounds = new maplibregl.LngLatBounds();
+                coords.forEach(coord => bounds.extend(coord));
+                map.fitBounds(bounds, {
+                    padding: 50,
                     duration: 1000
                 });
+            } catch (e) {
+                console.warn('Не може да се центрира картата:', e);
+            }
+        }
 
-                // Маркираме реда в таблицата
-                document.querySelectorAll('#locationTableBody tr').forEach(row => {
-                    row.classList.remove('bg-yellow-100');
-                });
+        function setTimelineSpeed(speed) {
+            // Актуализираме активния бутон
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-300');
+            });
 
-                // Намираме реда с тази локация (сравнение с плаваща запетая)
-                const rows = document.querySelectorAll('#locationTableBody tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 2) {
-                        const coordText = cells[1].textContent.trim();
-                        const match = coordText.match(/([\d.]+),\s*([\d.]+)/);
-                        if (match) {
-                            const rowLat = parseFloat(match[1]);
-                            const rowLng = parseFloat(match[2]);
-                            if (Math.abs(rowLat - lat) < 0.0001 && Math.abs(rowLng - lng) < 0.0001) {
-                                row.classList.add('bg-yellow-100');
-                                row.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'center'
-                                });
-                            }
+            const activeBtn = document.querySelector(`.speed-btn[data-speed="${speed}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-gray-300');
+                activeBtn.classList.add('bg-blue-500', 'text-white');
+            }
+
+            // Ако възпроизвеждането е активно, рестартираме с новата скорост
+            if (isPlayingTimeline) {
+                clearInterval(timelinePlayInterval);
+                const currentSpeed = speed;
+                const playBtn = document.getElementById('playBtn');
+                
+                timelinePlayInterval = setInterval(() => {
+                    if (currentTimelineIndex < timelineData.length - 1) {
+                        showTimelinePoint(currentTimelineIndex + 1);
+                    } else {
+                        clearInterval(timelinePlayInterval);
+                        isPlayingTimeline = false;
+                        if (playBtn) {
+                            playBtn.innerHTML = '▶️ Възпроизвеждане';
+                            playBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition shadow';
                         }
+                        alert('🎉 Таймлайнът завърши!');
                     }
-                });
+                }, 1500 / currentSpeed);
             }
         }
 
-        // Центриране върху последната локация от списъка
-        function centerOnLastLocation() {
-            const rows = document.querySelectorAll('#locationTableBody tr');
-            if (rows.length > 0) {
-                const cells = rows[0].querySelectorAll('td');
-                if (cells.length >= 2) {
-                    const coordText = cells[1].textContent.trim();
-                    const match = coordText.match(/([\d.]+),\s*([\d.]+)/);
-                    if (match) {
-                        const lat = parseFloat(match[1]);
-                        const lng = parseFloat(match[2]);
-                        centerOnLocation(lat, lng);
-                    }
-                }
+        function closeTimeline() {
+            // Спираме всички таймлайн процеси
+            if (isPlayingTimeline) {
+                clearInterval(timelinePlayInterval);
+                isPlayingTimeline = false;
             }
-        }
-
-        // Превъртане до най-новата локация
-        function scrollToLatest() {
-            const container = document.getElementById('locationListContainer');
-            if (container) {
-                const rows = container.querySelectorAll('tbody tr');
-                if (rows.length > 0) {
-                    rows[0].scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                    rows[0].classList.add('bg-green-50');
-                    setTimeout(() => {
-                        rows[0].classList.remove('bg-green-50');
-                    }, 2000);
-                }
+            
+            // Премахваме таймлайн слоевете
+            if (map.getLayer('timeline-route')) {
+                map.removeLayer('timeline-route');
             }
-        }
-
-        // Превъртане до началото
-        function scrollToTop() {
-            const container = document.getElementById('locationListContainer');
-            if (container) {
-                container.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+            if (map.getSource('timeline-route')) {
+                map.removeSource('timeline-route');
             }
-        }
-
-        // Обновяване на списъка
-        function refreshLocations() {
-            location.reload();
-        }
-
-        // Експорт на локациите в CSV
-        function exportLocations() {
-            const rows = document.querySelectorAll('#locationTableBody tr');
-            if (rows.length === 0) {
-                alert('Няма данни за експорт.');
-                return;
+            
+            // Скриваме контролите
+            if (timelineControls) {
+                timelineControls.style.display = 'none';
             }
-
-            let csv = '#'; // Заглавия
-            csv += 'Lat,Lng,Distance (km),Speed (km/h),Recorded At,Battery (%),Accuracy (m)\n';
-
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 7) {
-                    const coords = cells[1].textContent.trim().replace(/\s+/g, ' ').split(' ');
-                    const lat = coords[0] || '';
-                    const lng = coords[2] || '';
-                    const distance = cells[2].textContent.trim();
-                    const speed = cells[3].textContent.trim().replace('км/ч', '').trim();
-                    const time = cells[4].textContent.trim();
-                    const battery = cells[5].textContent.trim().replace('%', '').trim();
-                    const accuracy = cells[6].textContent.trim().replace('м', '').trim();
-
-                    csv += `${lat},${lng},${distance},${speed},${time},${battery},${accuracy}\n`;
-                }
+            
+            // Изчистваме данните
+            timelineData = [];
+            currentTimelineIndex = 0;
+            
+            // Връщаме се към реално проследяване
+            isTimelineMode = false;
+            
+            // Връщаме се към реалната позиция
+            fetch('/current-runner-position')
+                .then(res => res.json())
+                .then(data => {
+                    updateRunnerPosition(parseFloat(data.lat), parseFloat(data.lng), parseFloat(data.distance));
+                })
+                .catch(err => console.error(err));
+            
+            // Премахваме активния клас от бутоните
+            document.querySelectorAll('.date-btn').forEach(btn => {
+                btn.classList.remove('active', 'ring-2', 'ring-offset-2', 'ring-emerald-500');
             });
+        }
 
-            // Създаване и изтегляне на CSV файл
-            const blob = new Blob([csv], {
-                type: 'text/csv;charset=utf-8;'
-            });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `locations_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+        function debugTimelineData() {
+            console.log('Timeline Data:', timelineData);
+            console.log('Total points:', timelineData.length);
+            if (timelineData.length > 0) {
+                console.log('First point:', timelineData[0]);
+                console.log('Last point:', timelineData[timelineData.length - 1]);
+                console.log('Sample points:', timelineData.slice(0, 5));
+            }
         }
 
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Маркираме първия ред (най-нов) със специален клас
-            const firstRow = document.querySelector('#locationTableBody tr');
-            if (firstRow) {
-                firstRow.classList.add('border-l-4', 'border-blue-500');
-            }
-            
-            // Стартиране на картата
-            setTimeout(initMap, 300);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                initMap();
+            }, 300);
         });
     </script>
 </body>

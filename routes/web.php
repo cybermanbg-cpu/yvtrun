@@ -140,3 +140,68 @@ Route::post('/owntracks', [App\Http\Controllers\Api\OwnTracksController::class, 
 
 // По желание можеш да добавиш и query параметри за лесно тестване:
 Route::post('/owntracks/test', [App\Http\Controllers\Api\OwnTracksController::class, 'publish']);
+
+// Маршрут за история на локациите за конкретен ден
+Route::get('/location-history/{date?}', function ($date = null) {
+    if ($date) {
+        $history = LocationHistory::whereDate('recorded_at', $date)
+            ->orderBy('recorded_at', 'asc')
+            ->get();
+    } else {
+        $history = LocationHistory::orderBy('recorded_at', 'asc')->get();
+    }
+    
+    return response()->json([
+        'history' => $history->map(function ($item) {
+            return [
+                'lat' => (float) $item->lat,
+                'lng' => (float) $item->lng,
+                'distance_km' => (float) $item->distance_km,
+                'speed' => (float) $item->speed,
+                'recorded_at' => $item->recorded_at->toISOString(),
+                'time' => $item->recorded_at->format('H:i:s')
+            ];
+        }),
+        'total_distance' => LocationHistory::getTotalDistanceFromHistory(),
+        'points_count' => $history->count()
+    ]);
+})->name('location.history');
+
+// Маршрут за последните N локации
+Route::get('/location-history/recent/{limit?}', function ($limit = 100) {
+    $history = LocationHistory::getRecent($limit);
+    
+    return response()->json([
+        'history' => $history->map(function ($item) {
+            return [
+                'lat' => (float) $item->lat,
+                'lng' => (float) $item->lng,
+                'distance_km' => (float) $item->distance_km,
+                'speed' => (float) $item->speed,
+                'recorded_at' => $item->recorded_at->toISOString(),
+                'time' => $item->recorded_at->format('H:i:s')
+            ];
+        }),
+        'points_count' => $history->count()
+    ]);
+})->name('location.history.recent');
+
+// Маршрут за днешния маршрут
+Route::get('/location-history/today', function () {
+    $history = LocationHistory::getTodayRoute();
+    
+    return response()->json([
+        'history' => $history->map(function ($item) {
+            return [
+                'lat' => (float) $item->lat,
+                'lng' => (float) $item->lng,
+                'distance_km' => (float) $item->distance_km,
+                'speed' => (float) $item->speed,
+                'recorded_at' => $item->recorded_at->toISOString(),
+                'time' => $item->recorded_at->format('H:i:s')
+            ];
+        }),
+        'total_distance' => LocationHistory::getTotalDistanceFromHistory(),
+        'points_count' => $history->count()
+    ]);
+})->name('location.history.today');
